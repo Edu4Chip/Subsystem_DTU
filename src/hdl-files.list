@@ -1,0 +1,3 @@
+# example of comment. generally ok as it is, but some tools require parser helper.
+src/sv/chip_top.sv
+src/sv/icn.sv
