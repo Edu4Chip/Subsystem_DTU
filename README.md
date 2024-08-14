@@ -1,4 +1,4 @@
-# Repository template (DTU)
+# DTU Repository
 
 The project at DTU is a small 32-bit processor, called Leros.
 Leros is a tiny processor core for embedded systems.
@@ -13,7 +13,12 @@ Besides Leros, we will also have a tiny FSM to blink (and beep) "Hello World" in
 Note that this project includes Leros and a tiny FSM as submodules. Therefore, you need to update with:
 
 ```
-git submodule init
-git submodule update
+git submodule update --init --recursive
 ```
+
+## TODO
+
+ - [ ] Add CI
+ - [ ] Testing in an FPGA
+
 
