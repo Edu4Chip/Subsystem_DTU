@@ -1,0 +1,6 @@
+[submodule "hello-morse"]
+	path = hello-morse
+	url = git@github.com:schoeberl/hello-morse.git
+[submodule "leros"]
+	path = leros
+	url = git@github.com:leros-dev/leros.git

@@ -8,3 +8,10 @@ The instruction memory shall be loaded from the IBEX over the APB.
 
 Leros will be connected to the two PMOD IO pins, using a UART and blinking an LED.
 
+Note that this project includes Leros and a tiny FSM as submodules. Therefore, you need to update with:
+
+```
+git submodule init
+git submodule update
+```
+
