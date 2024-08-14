@@ -8,6 +8,8 @@ The instruction memory shall be loaded from the IBEX over the APB.
 
 Leros will be connected to the two PMOD IO pins, using a UART and blinking an LED.
 
+Besides Leros, we will also have a tiny FSM to blink (and beep) "Hello World" in Morse code.
+
 Note that this project includes Leros and a tiny FSM as submodules. Therefore, you need to update with:
 
 ```
