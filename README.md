@@ -20,7 +20,7 @@ git submodule update --init --recursive
 
 ## TODO
 
- - [ ] Add CI
+ - [x] Add CI
  - [ ] Testing in an FPGA
 
 
