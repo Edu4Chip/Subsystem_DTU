@@ -1,3 +1,5 @@
+![CI](https://github.com/Edu4Chip/Subsystem_DTU/actions/workflows/scala.yml/badge.svg)
+
 # DTU Repository
 
 The project at DTU is a small 32-bit processor, called Leros.
