@@ -1,20 +1,9 @@
 import chisel3._
 import chisel3.util._
 
-class APBTargetPort(addrWidth:Int = 32, dataWidth:Int = 32) extends Bundle() {
-    val paddr = Input(UInt(addrWidth.W))
-    val psel = Input(Bool())
-    val penable = Input(Bool())
-    val pwrite = Input(Bool())
-    val pwdata = Input(UInt(dataWidth.W))
-    val pready = Output(Bool())
-    val prdata = Output(UInt(dataWidth.W))
-    val pslverr = Output(Bool())
-}
-
-class APBTarget(addrWidth:Int = 32, dataWidth:Int = 32, baseAddr:Int = 0, registerCount:Int = 5) extends Module {
+class ApbRegTarget(addrWidth:Int = 32, dataWidth:Int = 32, baseAddr:Int = 0, registerCount:Int = 5) extends Module {
     val io = IO(new Bundle{
-        val apb = new APBTargetPort(addrWidth, dataWidth)
+        val apb = new ApbTargetPort(addrWidth, dataWidth)
     })
 
     val idle :: write :: read :: Nil = Enum(3)
@@ -54,8 +43,4 @@ class APBTarget(addrWidth:Int = 32, dataWidth:Int = 32, baseAddr:Int = 0, regist
         }
     }
 
-}
-
-object APBTarget extends App {
-    emitVerilog(new APBTarget(), Array("--target-dir", "generated"))
 }
