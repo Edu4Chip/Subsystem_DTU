@@ -10,7 +10,7 @@ import chisel3.stage.{ChiselStage, ChiselGeneratorAnnotation}
     * A verilog blackbox module is added that generates a synchronous active high reset from an asynchrnous active low reset 
 */
 
-class DtuTop(addrWidth:Int = 10, dataWidth:Int = 32) extends Module {
+class DtuTop(addrWidth:Int = 32, dataWidth:Int = 32) extends Module {
   val io = IO(new Bundle {
     // Interface: APB
     val apb = new ApbTargetPort(addrWidth, dataWidth)    
@@ -40,7 +40,7 @@ class DtuTop(addrWidth:Int = 10, dataWidth:Int = 32) extends Module {
   // All modules instantiated here are reset by synchronous active high reset
   // All registers must be instantiated within this to ensure all have the same reset
   withReset(ResetSync.io.resetOut) {
-    val ApbRegs = Module(new ApbRegTarget(addrWidth, dataWidth, 0, 2))
+    val ApbRegs = Module(new ApbRegTarget(addrWidth, dataWidth, 0x01050000, 5))
     io.apb <> ApbRegs.io.apb
   }
 
@@ -59,5 +59,5 @@ class DtuTop(addrWidth:Int = 10, dataWidth:Int = 32) extends Module {
 }
 
 object DtuTop extends App {
-  (new ChiselStage).emitSystemVerilog(new DtuTop(addrWidth=10, dataWidth=32), Array("--target-dir", "src/sv"))
+  (new ChiselStage).emitSystemVerilog(new DtuTop(addrWidth=32, dataWidth=32), Array("-X", "sverilog", "-e", "sverilog", "--target-dir", "src/sv"))
 }
