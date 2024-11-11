@@ -1,7 +1,7 @@
 import chisel3._
 import chisel3.util._
 
-class ApbRegTarget(addrWidth:Int = 32, dataWidth:Int = 32, baseAddr:Int = 0, registerCount:Int = 5) extends Module {
+class ApbRegTarget(addrWidth:Int = 32, dataWidth:Int = 32, baseAddr:Int = 0x01050000, registerCount:Int = 5) extends Module {
     val io = IO(new Bundle{
         val apb = new ApbTargetPort(addrWidth, dataWidth)
     })

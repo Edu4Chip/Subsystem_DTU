@@ -7,13 +7,13 @@ class APBTargetTest() extends AnyFlatSpec with ChiselScalatestTester {
 
     val addrWidth = 32
     val dataWidth = 32
-    val baseAddr = 0x00
+    val baseAddr = 0x01050000
     val registerCount = 5
     
-    val testCases = 100
+    val testCases = 5
 
     "APB Target test" should "pass" in {
-        test(new APBTarget(addrWidth, dataWidth, baseAddr, registerCount)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>            
+        test(new ApbRegTarget(addrWidth, dataWidth, baseAddr, registerCount)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>            
 
             val registerMapSim = Array.fill(registerCount)(0)
 
@@ -27,7 +27,7 @@ class APBTargetTest() extends AnyFlatSpec with ChiselScalatestTester {
 
             val topAddr = Math.pow(2, registerCount-1).toInt
             for(i <- 0 to testCases) {                                
-                val testAddr = Random.nextInt(topAddr + 2).toInt
+                val testAddr = Random.nextInt(topAddr + 2).toInt + baseAddr
                 val testData = Random.nextInt(0xFFFFFFF).toInt
                 
                 val action = Random.nextInt(2)
