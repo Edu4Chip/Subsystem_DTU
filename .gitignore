@@ -1,3 +1,15 @@
 build/*
-
-# add here object files etc
+.bloop/*
+.bsp/*
+.metals/*
+.vscode/*
+project/*
+target/*
+test_run_dir/*
+verification/bin/*
+verification/include/*
+verification/lib/*
+verification/lib64
+verification/sim_build/*
+verification/pyvenv.cfg
+verification/results.xml
