@@ -40,6 +40,8 @@ class DtuTop(addrWidth:Int = 32, dataWidth:Int = 32, prog:String = "", resetSync
   ResetSync.io.clock := clock
   ResetSync.io.resetIn := reset
 
+  val syncReset = RegNext(RegNext(!reset.asBool))
+
   val lerosSize = 32
   val lerosMemAddrWidth = 8
   val lerosClockFreq = 100000000
@@ -47,9 +49,11 @@ class DtuTop(addrWidth:Int = 32, dataWidth:Int = 32, prog:String = "", resetSync
 
   // All modules instantiated here are reset by synchronous active high reset
   // All registers must be instantiated within this to ensure all have the same reset
-  val leros = withReset(ResetSync.io.resetOut) {
-    val ApbRegs = Module(new ApbRegTarget(addrWidth, dataWidth, 0x01050000, 5))
-    io.apb <> ApbRegs.io.apb
+  // MS: maybe we should have yet another top level jut for the reset handling to avoid this withReset
+  // MS: what is the meaning of the leros value here?
+  val leros = withReset((ResetSync.io.resetOut.asBool)) {
+    val apbReg = Module(new ApbRegTarget(addrWidth, dataWidth, 0x01050000, 5))
+    io.apb <> apbReg.io.apb
     
     // pmod 0 set to output
     val pmod0oeReg = RegInit(0.U(8.W))
