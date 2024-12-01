@@ -1,5 +1,6 @@
 import chisel3._
 import chiseltest._
+import io._
 import org.scalatest.flatspec.AnyFlatSpec
 import scala.util.Random
 
