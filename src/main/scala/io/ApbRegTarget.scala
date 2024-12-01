@@ -1,3 +1,5 @@
+package io
+
 import chisel3._
 import chisel3.util._
 
@@ -9,7 +11,7 @@ class ApbRegTarget(addrWidth:Int = 32, dataWidth:Int = 32, baseAddr:Int = 0x0105
     val idle :: write :: read :: Nil = Enum(3)
     val state = RegInit(idle)
 
-    val registerMap = RegInit(VecInit(Seq.fill(5)(0.U(dataWidth.W))))
+    val registerMap = RegInit(VecInit(Seq.fill(registerCount)(0.U(dataWidth.W))))
     val registerIndex = WireDefault(0.U(log2Ceil(registerCount).W))
     registerIndex := (io.apb.paddr - baseAddr.U) >> 2
 

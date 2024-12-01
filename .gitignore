@@ -13,3 +13,4 @@ verification/lib64
 verification/sim_build/*
 verification/pyvenv.cfg
 verification/results.xml
+src/sv/*

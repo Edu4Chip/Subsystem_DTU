@@ -1,7 +1,9 @@
+package io
+
 import chisel3._
 import chisel3.util._
 
-class ApbTargetPort(addrWidth:Int = 32, dataWidth:Int = 32) extends Bundle() {
+class ApbTargetPort(addrWidth:Int, dataWidth:Int) extends Bundle() {
     val paddr = Input(UInt(addrWidth.W))
     val psel = Input(Bool())
     val penable = Input(Bool())

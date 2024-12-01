@@ -26,11 +26,14 @@ Red signals are IOs connected to the PMOD connector. Blue signals are IOs betwee
 | `irqEn1`          | input               | Interrupt enable           | N/A
 | `ssCtrl1`         | input               | --                         | N/A
 | `boot`            | input               | select boot source         | `pmod0[0]`
-| `uart_rx_prog`    | input               | UART program interface     | `pmod0[1]`
-| `uart_tx_leros`   | output              | Leros UART interface       | `pmod0[2]`
-| `uart_rx_leros`   | input               | Leros UART interface       | `pmod0[3]`
-| `led`             | output              | Led output                 | `pmod1[0]`
-| `morse`           | output              | Morse output               | `pmod1[1]`
+| `uart_rx`         | output              | Leros UART interface       | `pmod0[1]`
+| `uart_tx`         | input               | Leros UART interface       | `pmod0[2]`
+| unused            | --                  | --                         | `pmod0[3]`
+| `gpio[0]`         | input/output        | Leros GPIO                 | `pmod1[0]`
+| `gpio[1]`         | input/output        | Leros GPIO                 | `pmod1[1]`
+| `gpio[2]`         | input/output        | Leros GPIO                 | `pmod1[2]`
+| `gpio[3]`         | input/output        | Leros GPIO                 | `pmod1[3]`
+
 
 
 Currently `irq1`, `irqEn1` and `ssCtrl1` are unused. `irq1` is tied to 0. 

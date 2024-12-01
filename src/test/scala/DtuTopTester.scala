@@ -29,7 +29,7 @@ class DtuTopTester extends AnyFlatSpec with ChiselScalatestTester {
       val res = dut.io.accu.expect(1.U, "Accu shall be one at the end of a test case.\n")
     }
 
-    "Leros HW " should s"pass $program" in {
+    "Leros HW " should s"pass $program" in {      
       test(new DtuTopTest(prog = program))
         .withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
         testFun(dut)

@@ -4,7 +4,10 @@ import chisel3.util.experimental.BoringUtils
 import leros._
 
 class DtuTopTest(prog:String) extends Module {
-  val dtuTop = Module(new DtuTop(prog = prog, resetSyncFact = () => Module(new ResetSyncTest())))
+
+  val apbBaseAddr = 0x01050000
+
+  val dtuTop = Module(new DtuTop(apbBaseAddr = apbBaseAddr, progROM = prog, resetSyncFact = () => Module(new ResetSyncTest())))
   // val programmer = Module(new Programmer(dtuTop.lerosClockFreq, dtuTop.lerosUartBaudrate, prog))
   val io = IO(new Debug(dtuTop.lerosSize, dtuTop.lerosMemAddrWidth))
 
