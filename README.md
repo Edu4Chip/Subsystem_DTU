@@ -1,19 +1,17 @@
 ![CI](https://github.com/Edu4Chip/Subsystem_DTU/actions/workflows/scala.yml/badge.svg)
 
 # DTU Subsystem Edu4Chip
-The project at DTU is a small 32-bit processor, called Leros. Leros is a tiny processor core for embedded systems. It features a two-stage pipeline. The first stage fetches an instruction and decodes it, the second stage reads operands from data memory and executes the instruction. 
+The project at DTU is a small 32-bit processor, called Leros. Leros is a tiny processor core for embedded systems. 
 See more documentation on the [website for Leros](https://leros-dev.github.io/). 
 
-The instruction memory shall be loaded from the IBEX over the APB or over UART (115200 baud/s) interface, this is selectable using `boot` pin. Leros will be connected to the two PMOD connectors (`pmod0` and `pmod1`, each pmod connector has 4 pins). 
-Leros peripherals are memory mapped, for now it features a simple UART RX/TX interface operating at baudrate of 115200 baud/s. 
-
-Besides Leros, the DTU subsystem will also have a tiny FSM to blink and beep "Hello World" in Morse code. These are independent from Leros. 
-
+The instruction memory shall be loaded from the IBEX over the APB interface. Alternatively Leros can execute from a ROM. Which source Leros boots from is selectable using `bootSel`.
+Leros a UART interface and 4 GPIOs, this are distributed on two rows of PMOD connectors. 
 
 ## Diagram
 
-![Alt text](doc/figures/DTU_Subsystem_Diagram.png)
+![DTU Subsystem diagram](doc/figures/DTU_Subsystem_Diagram.png)
 Red signals are IOs connected to the PMOD connector. Blue signals are IOs between DTU subsystem and staff area. Arrows marked with **bold** denote a bus interface.  
+Cross Core Registers (CCR) facilite communication between Leros and Ibex. They consist of two sets of registers, the first set is readable from APB and writeable from Leros, the second set is writeable from APB and readable from Leros. For now system features 8x cross core registers (4x in each direction). Cross core registers are 8-bit wide. 
 
 ## Pin Table
 
@@ -25,7 +23,7 @@ Red signals are IOs connected to the PMOD connector. Blue signals are IOs betwee
 | `irq1`            | output              | Interrupt                  | N/A
 | `irqEn1`          | input               | Interrupt enable           | N/A
 | `ssCtrl1`         | input               | --                         | N/A
-| `boot`            | input               | select boot source         | `pmod0[0]`
+| `bootSel`         | input               | select boot source         | `pmod0[0]`
 | `uart_rx`         | output              | Leros UART interface       | `pmod0[1]`
 | `uart_tx`         | input               | Leros UART interface       | `pmod0[2]`
 | unused            | --                  | --                         | `pmod0[3]`
@@ -38,7 +36,9 @@ Red signals are IOs connected to the PMOD connector. Blue signals are IOs betwee
 
 Currently `irq1`, `irqEn1` and `ssCtrl1` are unused. `irq1` is tied to 0. 
 
-##  
+## Memory Map
+![Memory Maps](doc/figures/Memory_Map.png)
+
 
 ## Instructions
 Note that this project includes Leros and a tiny FSM as submodules. Therefore, you need to update with:
@@ -46,11 +46,6 @@ Note that this project includes Leros and a tiny FSM as submodules. Therefore, y
 ```
 git submodule update --init --recursive
 ```
-## Todo 
- - [x] Add CI
- - [x] Testing in an FPGA
- - [ ] Add instructions on how to compile programs for Leros
- - [ ] Add instructions on how to boot Leros
- - [ ] Add documentation on Leros program loading
+
 
 
