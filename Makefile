@@ -12,7 +12,7 @@ generate:
 	sbt run
 
 generate_dtu:
-	sbt "runMain DtuTop $(APB_BASE_ADDR) $(PROG_DIR)/$(ROM) $(BUILD_DIR)"
+	sbt "runMain DtuTop $(PROG_DIR)/$(ROM) $(BUILD_DIR)"
 
 clean:
 	rm -rf $(BUILD_DIR)/*.sv 
@@ -27,4 +27,5 @@ test:
 	cd hello-morse; sbt test
 
 test_dtu:
-	sbt "testOnly DtuTopTester"
+	sbt "testOnly DtuTopTesterROM"
+	sbt "testOnly DtuTopTesterAPB"

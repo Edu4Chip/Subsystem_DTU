@@ -20,9 +20,6 @@ class SramSim(addrWidth: Int, dataWidth: Int) extends Module {
   })
 
   val rdVec = Wire(Vec(maskWidth, UInt(8.W)))
-  for (i <- 0 until maskWidth) {
-    rdVec(i) := 0.U(8.W)
-  }
 
   val wrVec = Wire(Vec(maskWidth, UInt(8.W)))
   val wrMask = Wire(Vec(maskWidth, Bool()))
@@ -34,14 +31,11 @@ class SramSim(addrWidth: Int, dataWidth: Int) extends Module {
 
   val mem = SyncReadMem(math.pow(2, addrWidth).toInt, Vec(maskWidth, UInt(8.W)))
 
-  when(io.req) {
-    when(~io.wr) {
-        rdVec := mem.read(io.rdAddr)
-    }
-    . otherwise {
-        mem.write(io.wrAddr, wrVec, wrMask)
-    }
+  rdVec := mem.read(io.rdAddr)
+  when(io.wr) {
+      mem.write(io.wrAddr, wrVec, wrMask)        
   }
 
   io.rdData := Cat(rdVec.reverse)
 }
+

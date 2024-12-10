@@ -1,36 +1,37 @@
 import chisel3._
 import chisel3.util.experimental.BoringUtils
-
+import io._
 import leros._
+import config._
 
 class DtuTopTest(prog:String) extends Module {
 
-  val apbBaseAddr = 0x01050000
-
-  val dtuTop = Module(new DtuTop(apbBaseAddr = apbBaseAddr, progROM = prog, resetSyncFact = () => Module(new ResetSyncTest())))
+  val dtuTop = Module(new DtuTop(progROM = prog, resetSyncFact = () => Module(new ResetSyncTest())))
   // val programmer = Module(new Programmer(dtuTop.lerosClockFreq, dtuTop.lerosUartBaudrate, prog))
-  val io = IO(new Debug(dtuTop.lerosSize, dtuTop.lerosMemAddrWidth))
+  val io = IO( new Bundle{
+    val dbg = new Debug(LEROS_CONFIG.ACCU_SIZE, LEROS_CONFIG.DMEM_ADDR_WIDTH)
+    val apb = new ApbTargetPort(APB_CONFIG.ADDR_WIDTH, APB_CONFIG.DATA_WIDTH)
+    val pmod0 = new PmodGpioPort()
+    val pmod1 = new PmodGpioPort()
+
+  })
+
+  dtuTop.reset := ~reset.asBool
 
   // Boring Utils for debugging
-  io.accu := DontCare
-  io.pc := DontCare
-  io.instr := DontCare
-  io.exit := DontCare
-  BoringUtils.bore(dtuTop.leros.accu, Seq(io.accu))
-  BoringUtils.bore(dtuTop.leros.pcReg, Seq(io.pc))
-  BoringUtils.bore(dtuTop.leros.instr, Seq(io.instr))
-  BoringUtils.bore(dtuTop.leros.exit, Seq(io.exit))
+  io.dbg.accu := DontCare
+  io.dbg.pc := DontCare
+  io.dbg.instr := DontCare
+  io.dbg.exit := DontCare
+  BoringUtils.bore(dtuTop.lerosController.leros.accu, Seq(io.dbg.accu))
+  BoringUtils.bore(dtuTop.lerosController.leros.pcReg, Seq(io.dbg.pc))
+  BoringUtils.bore(dtuTop.lerosController.leros.instr, Seq(io.dbg.instr))
+  BoringUtils.bore(dtuTop.lerosController.leros.exit, Seq(io.dbg.exit))
   
+  io.apb <> dtuTop.io.apb
+  io.pmod0 <> dtuTop.io.pmod0
+  io.pmod1 <> dtuTop.io.pmod1
 
-  dtuTop.io.apb.paddr := 0.U
-  dtuTop.io.apb.pwrite := false.B
-  dtuTop.io.apb.psel := false.B
-  dtuTop.io.apb.penable := false.B
-  dtuTop.io.apb.pwdata := 0.U
-
-  // dtuTop.io.pmod0.gpi := programmer.io.txd ## 0.U
-  dtuTop.io.pmod0.gpi := 0.U
-  dtuTop.io.pmod1.gpi := 0.U
   dtuTop.io.irqEn1 := false.B
   dtuTop.io.ssCtrl1 := 0.U
 }

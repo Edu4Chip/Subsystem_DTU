@@ -6,7 +6,7 @@ import chisel3.util.experimental.BoringUtils
 
 import leros._
 
-class DtuTopTester extends AnyFlatSpec with ChiselScalatestTester {
+class DtuTopTesterROM extends AnyFlatSpec with ChiselScalatestTester {
   System.setProperty("testpath", "leros/asm/test")
   val progs = leros.shared.Util.getProgs()  
   progs.foreach(p => {
@@ -16,17 +16,18 @@ class DtuTopTester extends AnyFlatSpec with ChiselScalatestTester {
     
       var run = true
       var maxCycles = 1000
+
       while (run) {
-        val pc = dut.io.pc.peekInt()
-        val accu = dut.io.accu.peekInt()
-        val instr = dut.io.instr.peekInt()
+        val pc = dut.io.dbg.pc.peekInt()
+        val accu = dut.io.dbg.accu.peekInt()
+        val instr = dut.io.dbg.instr.peekInt()
         // Predef.printf("pc: 0x%04x instr: 0x%04x accu: 0x%08x\n", pc, instr, accu)
         dut.clock.step(1)
         maxCycles -= 1
-        run = dut.io.exit.peekInt() == 0 && maxCycles > 0
+        run = dut.io.dbg.exit.peekInt() == 0 && maxCycles > 0
         assert(maxCycles > 0, "Running out of cycles")
       }
-      val res = dut.io.accu.expect(1.U, "Accu shall be one at the end of a test case.\n")
+      val res = dut.io.dbg.accu.expect(1.U, "Accu shall be one at the end of a test case.\n")
     }
 
     "Leros HW " should s"pass $program" in {      

@@ -4,6 +4,7 @@ import chisel3.util._
 import leros._
 import leros.uart._
 import io._
+import config._
 
 
 /*
@@ -15,22 +16,11 @@ import io._
     * A verilog blackbox module is added that generates a synchronous active high reset from an asynchrnous active low reset 
 */
 
-class DtuTop(apbBaseAddr:Int, progROM:String, resetSyncFact:() => ResetSyncBase = () => Module(new ResetSync())) extends Module {
-  
-  val apbAddrWidth = 32
-  val apbDataWidth = 32
-  
-  val lerosSize = 32
-  val lerosMemAddrWidth = 8
-  val lerosInstrWidth = 16
-  val lerosClockFreq = 100000000
-  val lerosUartBaudrate = 115200
-  // IO is now mapped to 0x0f00, but wrAddr counts in 32-bit words
-  val lerosIoBaseAddr = 0x03c0
+class DtuTop(progROM:String, resetSyncFact:() => ResetSyncBase = () => Module(new ResetSync())) extends Module {
 
   val io = IO(new Bundle {
     // Interface: APB
-    val apb = new ApbTargetPort(apbAddrWidth, apbDataWidth)    
+    val apb = new ApbTargetPort(APB_CONFIG.ADDR_WIDTH, APB_CONFIG.DATA_WIDTH)  
 
     // Clock and reset are added implicity
     // Reset is asynchronous active low
@@ -60,88 +50,52 @@ class DtuTop(apbBaseAddr:Int, progROM:String, resetSyncFact:() => ResetSyncBase 
   // All registers must be instantiated within this to ensure all have the same reset
   // MS: maybe we should have yet another top level jut for the reset handling to avoid this withReset
   // MS: what is the meaning of the leros value here?
-  val leros = withReset((ResetSync.io.resetOut.asBool)) {
-    
-    val uartRx = Module(new UARTRx(lerosClockFreq, lerosUartBaudrate))
-    val uartTx = Module(new BufferedTx(lerosClockFreq, lerosUartBaudrate))
-    val registerMap = RegInit(VecInit(Seq.fill(Register_Map_Index.COUNT)(0.U(8.W))))
+  
+  
+  val apbIntf = withReset(syncReset)(Module(new ApbInterface()))
+  val instrMem = withReset(syncReset)(Module(new SramSim(LEROS_CONFIG.IMEM_ADDR_WIDTH, LEROS_CONFIG.INSTR_WIDTH)))
 
-    registerMap(Register_Map_Index.UART_RX_DATA.U) := uartRx.io.out.bits
-    registerMap(Register_Map_Index.UART_RX_VALID) := uartRx.io.out.valid
-    uartRx.io.out.ready := registerMap(Register_Map_Index.UART_RX_READY)
+  // APB interface
+  io.apb <> apbIntf.io.apb
+  
+  // APB to instruction
+  instrMem.io.req := true.B
+  instrMem.io.wr := apbIntf.io.imemWr
+  instrMem.io.wrAddr := apbIntf.io.imemWrAddr
+  instrMem.io.wrData := apbIntf.io.imemWrData
+  instrMem.io.wrMask := apbIntf.io.imemWrMask
 
-    uartTx.io.channel.bits := registerMap(Register_Map_Index.UART_TX_DATA.U)
-    uartTx.io.channel.valid := registerMap(Register_Map_Index.UART_TX_VALID)
-    registerMap(Register_Map_Index.UART_TX_READY) := uartTx.io.channel.ready
+  // leros with data memory, rom and peripherals
+  val lerosController = Module(new LerosController(progROM))
+  lerosController.reset := apbIntf.io.lerosReset | syncReset
 
-    // interrup not generated
-    io.irq1 := false.B
+  // leros writeable instr mem
+  lerosController.io.instr := instrMem.io.rdData
+  instrMem.io.rdAddr := Mux(apbIntf.io.lerosReset, 0.U, lerosController.io.instrMemAddr)
 
-    /* pmod 0
-       pin 0: boot select
-       pin 1: uart rx
-       pin 2: uart tx
-       pin 3: unused
-    */
-    io.pmod0.oe := "b0011".U
-    val bootSel = io.pmod0.gpi(0)
-    uartRx.io.rxd := io.pmod0.gpi(1)
-    io.pmod0.gpo := "b0".U ## uartTx.io.txd ## "b00".U
+  // APB to CCR
+  apbIntf.io.apbCCR <> lerosController.io.ccrApbPort
 
-    // pmod 1 are GPIO pins memory mapped to Leros
-    io.pmod1.oe := registerMap(Register_Map_Index.PMOD_OE)
-    io.pmod1.gpo := registerMap(Register_Map_Index.PMOD_GPO)
-    registerMap(Register_Map_Index.PMOD_GPI) := io.pmod1.gpi
+  /* pmod 0
+    pin 0: boot select
+    pin 1: uart rx
+    pin 2: uart tx
+    pin 3: unused
+  */
+  io.pmod0.oe := "b0011".U
+  val bootSel = io.pmod0.gpi(0)
+  lerosController.io.uartRx := io.pmod0.gpi(1)
+  io.pmod0.gpo := "b0".U ## lerosController.io.uartTx ## "b00".U
 
-    if (!progROM.isEmpty) {
-      val leros = Module(new Leros(prog = "notused", size = lerosSize, memAddrWidth = lerosMemAddrWidth))
-      
-      val lerosCtrlRegAddr = math.pow(2, lerosMemAddrWidth).toInt + apbBaseAddr
-      val apbLoader = Module(new ApbLoader(apbAddrWidth, apbDataWidth, apbBaseAddr, lerosCtrlRegAddr, lerosMemAddrWidth, lerosInstrWidth))
-      io.apb <> apbLoader.io.apb
-      
-      val instrMem = Module(new SramSim(lerosMemAddrWidth, lerosInstrWidth))
-      val instrROM = Module(new InstrMem(lerosMemAddrWidth, progROM))
+  lerosController.io.bootSel := bootSel
 
+  // pmod1: GPIOs addressable from Leros
+  io.pmod1 <> lerosController.io.pmodGpio
 
-      instrMem.io.wr := apbLoader.io.wr
-      instrMem.io.req := apbLoader.io.req
-      instrMem.io.wrMask := apbLoader.io.wrMask
-      instrMem.io.wrAddr := apbLoader.io.wrAddr
-      instrMem.io.wrData := apbLoader.io.wrData
-
-      instrMem.io.rdAddr := leros.imemIO.addr
-      instrROM.io.addr := leros.imemIO.addr
-    
-      leros.imemIO.instr := Mux(bootSel, instrMem.io.rdData, instrROM.io.instr)
-      
-      leros.reset := apbLoader.io.lerosReset | reset.asBool
-
-      val dataMem = Module(new DataMem(lerosMemAddrWidth, false))
-            
-      val readIO = leros.dmemIO.rdAddr === lerosIoBaseAddr.U
-      val writeIO = (leros.dmemIO.wrAddr === lerosIoBaseAddr.U) &&  leros.dmemIO.wr
-
-      val registerReadIndex = leros.dmemIO.rdAddr - lerosIoBaseAddr.U
-      val registerWriteIndex = leros.dmemIO.wrAddr - lerosIoBaseAddr.U
-      
-      dataMem.io.rdAddr := leros.dmemIO.rdAddr
-      leros.dmemIO.rdData := Mux(readIO, registerMap(registerReadIndex), dataMem.io.rdData)
-    
-      dataMem.io.wr := leros.dmemIO.wr
-      dataMem.io.wrAddr := leros.dmemIO.wrAddr
-      dataMem.io.wrData := leros.dmemIO.wrData
-      dataMem.io.wrMask := leros.dmemIO.wrMask
-      when(writeIO) {
-        registerMap(registerWriteIndex) := leros.dmemIO.wrData
-      }
-      
-
-      leros
-    } else null.asInstanceOf[Leros]
-  }
+  io.irq1 := 0.U
 }
 
+
 object DtuTop extends App {
-  (new ChiselStage).emitSystemVerilog(new DtuTop(Integer.parseInt(args(0), 16), args(1)), Array("--target-dir", args(2)))
+  (new ChiselStage).emitSystemVerilog(new DtuTop(args(0)), Array("--target-dir", args(1)))
 }
