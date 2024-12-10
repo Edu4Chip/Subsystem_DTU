@@ -7,6 +7,13 @@ See more documentation on the [website for Leros](https://leros-dev.github.io/).
 The instruction memory shall be loaded from the IBEX over the APB interface. Alternatively Leros can execute from a ROM. Which source Leros boots from is selectable using `bootSel`.
 Leros a UART interface and 4 GPIOs, this are distributed on two rows of PMOD connectors. 
 
+## Instructions
+Note that this project includes Leros and a tiny FSM as submodules. Therefore, you need to update with:
+
+```
+git submodule update --init --recursive
+```
+
 ## Diagram
 
 ![DTU Subsystem diagram](doc/figures/DTU_Subsystem_Diagram.png)
@@ -40,12 +47,7 @@ Currently `irq1`, `irqEn1` and `ssCtrl1` are unused. `irq1` is tied to 0.
 ![Memory Maps](doc/figures/Memory_Map.png)
 
 
-## Instructions
-Note that this project includes Leros and a tiny FSM as submodules. Therefore, you need to update with:
 
-```
-git submodule update --init --recursive
-```
 
 
 
