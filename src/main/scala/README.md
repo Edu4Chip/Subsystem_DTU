@@ -11,4 +11,10 @@ The implementation can be customzed with following arguments:
 The implementations raises error signal `pslverr` when an invalid address is supplied. Byte level adressing is used. 
 
 A testbench is included which can performs a number of read and writes, and compares the content of registers after each read/write with a software simulation. 
-The number of read/writes executed can be changed by setting the `testCases` variable. 
+The number of read/writes executed can be changed by setting the `testCases` variable.
+
+## TODO
+
+ [ ] use synchronous reset
+ [ ] integrate (again) into Didactic
+ [ ] Drop unused program argument for Leros
