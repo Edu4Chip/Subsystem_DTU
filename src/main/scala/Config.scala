@@ -58,7 +58,7 @@ object APB_CONFIG {
   val N_WRITE_REGS = 4
   val REGS_WIDTH = 8
 
-  val BASE_ADDR  = 0x01050000
+  val BASE_ADDR  = 0x01052000
   val ADDR_RANGE = 0x00001000
 
   val ADDR_WIDTH = 32
@@ -69,13 +69,13 @@ object APB_ADDR_SPACE {
   import APB_CONFIG._
 
   val IMEM_START = 0x000
-  val IMEM_END = 0xFF6
+  val IMEM_END = 0xFF8
 
-  val READ_CCR_START = IMEM_END + 1
+  val READ_CCR_START = 0xFF8
   val READ_CCR_END = (READ_CCR_START + N_READ_REGS) - 1
 
   val WRITE_CCR_START = READ_CCR_END + 1
   val WRITE_CCR_END = (WRITE_CCR_START + N_WRITE_REGS) - 1
 
-  val RESET_REG = 0xFFF
+  val RESET_REG = 0xFFC
 }

@@ -18,7 +18,7 @@ class LerosController(prog: String) extends Module {
     val uartRx = Input(UInt(1.W))
   })
 
-  val leros = Module(new Leros("notused"))
+  val leros = Module(new Leros)
   val rom = Module(new InstrMem(LEROS_CONFIG.IMEM_ADDR_WIDTH, prog))
   val dmem = Module(new DataMem(LEROS_CONFIG.DMEM_ADDR_WIDTH, false))
   val ccrRegs = Module(new CrossCoreRegs())

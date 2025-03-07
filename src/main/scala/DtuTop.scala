@@ -16,7 +16,7 @@ import config._
     * A verilog blackbox module is added that generates a synchronous active high reset from an asynchrnous active low reset 
 */
 
-class DtuTop(progROM:String, resetSyncFact:() => ResetSyncBase = () => Module(new ResetSync())) extends Module {
+class DtuTop(progROM:String) extends Module {
 
   val io = IO(new Bundle {
     // Interface: APB
@@ -39,10 +39,6 @@ class DtuTop(progROM:String, resetSyncFact:() => ResetSyncBase = () => Module(ne
     val pmod1 = new PmodGpioPort()    
   })
 
-  // Generate a synchronous active high reset
-  val ResetSync = resetSyncFact()
-  ResetSync.io.clock := clock
-  ResetSync.io.resetIn := reset
 
   val syncReset = RegNext(RegNext(!reset.asBool))
 
@@ -66,8 +62,7 @@ class DtuTop(progROM:String, resetSyncFact:() => ResetSyncBase = () => Module(ne
   instrMem.io.wrMask := apbIntf.io.imemWrMask
 
   // leros with data memory, rom and peripherals
-  val lerosController = Module(new LerosController(progROM))
-  lerosController.reset := apbIntf.io.lerosReset | syncReset
+  val lerosController = withReset(apbIntf.io.lerosReset | syncReset)(Module(new LerosController(progROM)))
 
   // leros writeable instr mem
   lerosController.io.instr := instrMem.io.rdData

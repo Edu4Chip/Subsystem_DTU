@@ -6,7 +6,7 @@ import config._
 
 class DtuTopTest(prog:String) extends Module {
 
-  val dtuTop = Module(new DtuTop(progROM = prog, resetSyncFact = () => Module(new ResetSyncTest())))
+  val dtuTop = Module(new DtuTop(progROM = prog))
   // val programmer = Module(new Programmer(dtuTop.lerosClockFreq, dtuTop.lerosUartBaudrate, prog))
   val io = IO( new Bundle{
     val dbg = new Debug(LEROS_CONFIG.ACCU_SIZE, LEROS_CONFIG.DMEM_ADDR_WIDTH)
