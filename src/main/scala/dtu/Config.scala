@@ -1,4 +1,4 @@
-package config
+package dtu
 
 object GLOBAL {
   val CLOCK_FREQ = 100000000

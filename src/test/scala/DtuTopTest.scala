@@ -1,6 +1,7 @@
+import didactic.PmodGpioPort
+import apb.ApbTargetPort
 import chisel3._
 import chisel3.util.experimental.BoringUtils
-import io._
 import leros._
 import config._
 

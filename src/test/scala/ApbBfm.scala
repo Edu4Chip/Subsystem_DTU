@@ -2,7 +2,7 @@ import chisel3._
 
 import chiseltest._
 
-import io.ApbTargetPort
+import apb.ApbTargetPort
 
 import TestingHelper.ClockExtension
 

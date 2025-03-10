@@ -1,7 +1,7 @@
 import chisel3._
 import chisel3.util._
 import chiseltest._
-import io.ApbTargetPort
+import apb.ApbTargetPort
 
 object ApbRequester {
     def apbWrite(dut: DtuTopTest, addr: Int, wdata: Int) = {

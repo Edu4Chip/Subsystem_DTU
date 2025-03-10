@@ -3,6 +3,8 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
+import dtu.InstructionMemory
+
 class InstructionMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
     behavior of "InstructionMemory"
 

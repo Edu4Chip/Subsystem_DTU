@@ -1,3 +1,5 @@
+package misc
+
 import chisel3._
 
 
@@ -15,6 +17,9 @@ object Helper {
     implicit class UIntRangeCheck(value: UInt) {
         def inRange(min: UInt, max: UInt): Bool = {
             value >= min && value < max
+        }
+        def inRange(range: Range): Bool = {
+            value >= range.start.U && value < range.end.U
         }
     }
 
