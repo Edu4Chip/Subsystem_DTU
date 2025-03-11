@@ -5,7 +5,7 @@ import chisel3.util._
 
 import leros.DataMemIO
 
-import leros.uart.{Tx, Rx}
+import leros.uart.{BufferedTx, UARTRx}
 
 class UartPins extends Bundle {
   val tx = Output(Bool())
@@ -18,24 +18,20 @@ class Uart(bufferSize: Int, frequency: Int, baud: Int) extends Module {
 
   val dmemPort = IO(new DataMemIO(1))
 
-  val tx = Module(new Tx(frequency, baud))
-  val rx = Module(new Rx(frequency, baud))
+  val tx = Module(new BufferedTx(frequency, baud))
+  val rx = Module(new UARTRx(frequency, baud))
 
-  val txQueue = Module(new Queue(UInt(8.W), bufferSize))
-  val rxQueue = Module(new Queue(UInt(8.W), bufferSize))
-
-  tx.io.channel <> txQueue.io.deq
-  txQueue.io.enq.noenq()
+  tx.io.channel.valid := 0.B
+  tx.io.channel.bits := dmemPort.wrData
   uartPins.tx := tx.io.txd
 
-  rx.io.channel <> rxQueue.io.enq
-  rxQueue.io.deq.nodeq()
+  rx.io.out.ready := 0.B
   rx.io.rxd := uartPins.rx
 
   when(dmemPort.rdAddr === 0.U) {
-    dmemPort.rdData := txQueue.io.enq.ready ## rxQueue.io.deq.valid
+    dmemPort.rdData := tx.io.channel.ready ## rx.io.out.valid
   } otherwise {
-    dmemPort.rdData := rxQueue.io.deq.deq()
+    dmemPort.rdData := rx.io.out.bits
   }
 
   when(dmemPort.wr) {
@@ -44,7 +40,7 @@ class Uart(bufferSize: Int, frequency: Int, baud: Int) extends Module {
         // nothing to do
       }
       is(1.U) {
-        txQueue.io.enq.enq(dmemPort.wrData)
+        tx.io.channel.valid := 1.B
       }
     }
   }
