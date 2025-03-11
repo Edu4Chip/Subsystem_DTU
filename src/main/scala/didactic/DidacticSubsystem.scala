@@ -1,24 +1,24 @@
-package didactic
+package chisel3
 
 import chisel3._
-import chisel3.internal.firrtl.Width
+import chisel3.internal.Builder
 
 import apb.ApbTargetPort
 
 class DidacticSubsystemIO(apbAddrWidth: Int, apbDataWidth: Int) extends Bundle {
-    
-    val apb = new ApbTargetPort(apbAddrWidth, apbDataWidth)
 
-    val irq = Output(Bool())
-    val irqEn = Input(Bool())
+  val apb = new ApbTargetPort(apbAddrWidth, apbDataWidth)
 
-    val ssCtrl = Input(UInt(6.W))
+  val irq = Output(Bool())
+  val irqEn = Input(Bool())
 
-    val pmod = Vec(2, new PmodGpioPort)
+  val ssCtrl = Input(UInt(6.W))
+
+  val pmod = Vec(2, new didactic.PmodGpioPort)
 }
 
-trait DidacticSubsystem {
+abstract class DidacticSubsystem extends Module {
 
-    val io: DidacticSubsystemIO
+  val io: DidacticSubsystemIO
 
 }

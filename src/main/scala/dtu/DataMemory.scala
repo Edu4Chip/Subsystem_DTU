@@ -1,21 +1,23 @@
 package dtu
 
-import chisel3._ 
+import chisel3._
+import chisel3.util._
 
 import leros.DataMemIO
 import mem.MemoryFactory
 
-
 class DataMemory(noBytes: Int) extends Module {
 
-    val dmemPort = IO(new DataMemIO(2))
+  val addrWidth = log2Ceil(noBytes)
 
-    val mem = MemoryFactory.create(noBytes / 4)
+  val dmemPort = IO(new DataMemIO(addrWidth - 2))
 
-    dmemPort.rdData := mem.read(dmemPort.rdAddr)
+  val mem = MemoryFactory.create(noBytes / 4)
 
-    when(dmemPort.wr) {
-        mem.write(dmemPort.wrAddr, dmemPort.wrData, dmemPort.wrMask)
-    }
+  dmemPort.rdData := mem.read(dmemPort.rdAddr)
+
+  when(dmemPort.wr) {
+    mem.write(dmemPort.wrAddr, dmemPort.wrData, dmemPort.wrMask)
+  }
 
 }

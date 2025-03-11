@@ -18,7 +18,7 @@ class InstructionMemory(noBytes: Int) extends Module {
   val addrWidth = log2Ceil(noBytes)
 
   val instrPort = IO(new InstrMemIO(addrWidth))
-  val apbPort = IO(new ApbTargetPort(32, 32))
+  val apbPort = IO(new ApbTargetPort(addrWidth, 32))
 
   val mem = MemoryFactory.create(noBytes / 4)
 
@@ -26,11 +26,11 @@ class InstructionMemory(noBytes: Int) extends Module {
   apbPort.pslverr := 0.B
   apbPort.prdata := DontCare
 
+  instrPort.instr := DontCare
+
   when(apbPort.psel && apbPort.penable) { // transaction for us
 
     apbPort.pready := 1.B
-
-    instrPort.instr := 0.U
 
     val localAddr = apbPort.paddr(addrWidth - 1, 2)
 
