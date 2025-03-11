@@ -9,7 +9,7 @@ init:
 	git submodule update --init --recursive
 
 generate:
-	sbt "runMain DtuTop $(PROG_DIR)/$(ROM) $(BUILD_DIR)"
+	sbt "runMain dtu.DtuSubsystem"
 
 clean:
 	rm -rf $(BUILD_DIR)/*.sv 
@@ -22,7 +22,3 @@ test:
 	cd leros; make init
 	cd leros; sbt test
 	cd hello-morse; sbt test
-
-test_dtu:
-	sbt "testOnly DtuTopTesterROM"
-	sbt "testOnly DtuTopTesterAPB"

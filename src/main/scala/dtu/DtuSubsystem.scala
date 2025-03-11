@@ -67,7 +67,7 @@ object DtuSubsystem extends App {
 
   (new stage.ChiselStage).emitSystemVerilog(
     new DtuSubsystem("leros/asm/didactic.s"),
-    Array("--target-dir", "generated")
+    Array("--target-dir", "../src/generated")
   )
 }
 
