@@ -13,7 +13,7 @@ trait AbstractMemory {
 
 object MemoryFactory {
 
-  private var mem: Int => AbstractMemory = words => RegMemory.create(words)
+  private var mem: Int => AbstractMemory = words => ChiselSyncMemory.create(words)
 
   def create(n: Int): AbstractMemory = mem(n)
 

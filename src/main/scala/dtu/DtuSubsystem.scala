@@ -15,7 +15,7 @@ import chisel3.util.log2Ceil
 import mem.MemoryFactory
 
 object DtuSubsystemConfig {
-  val instructionMemorySize = 32 * 4
+  val instructionMemorySize = (0x800)
 
   val instructionMemoryAddrWidth = log2Ceil(instructionMemorySize)
 }
@@ -28,7 +28,7 @@ class DtuSubsystem(prog: String) extends DidacticSubsystem {
 
   val bootSelect = io.pmod(0).gpi(0) || io.ssCtrl(3)
 
-  val leros = Module(new Leros)
+  val leros = Module(new Leros(memAddrWidth = 16))
   leros.reset := reset.asBool || io.ssCtrl(2)
 
   val instrMem = Module(new InstructionMemory(instructionMemorySize))

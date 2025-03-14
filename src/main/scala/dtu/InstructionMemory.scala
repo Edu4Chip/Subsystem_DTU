@@ -34,7 +34,7 @@ class InstructionMemory(noBytes: Int) extends Module {
 
     val localAddr = apbPort.paddr(addrWidth - 1, 2)
 
-    when(localAddr.inRange(0.U, noBytes.U) && apbPort.pwrite) {
+    when(apbPort.pwrite) {
       mem.write(
         localAddr,
         apbPort.pwdata,

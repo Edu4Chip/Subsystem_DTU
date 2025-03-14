@@ -22,7 +22,7 @@ class RegBlock(n: Int) extends Module {
 
   apbPort.pslverr := 0.B
   apbPort.pready := 0.B
-  apbPort.prdata := lerosToIbexRegs(apbIndex)
+  apbPort.prdata := lerosToIbexRegs(RegNext(apbIndex))
 
   when(apbPort.psel && apbPort.penable) {
     apbPort.pready := 1.B

@@ -19,7 +19,7 @@ class Gpio extends Module {
   val gpis = pmodPort.gpi
 
   dmemPort.rdData := MuxLookup(
-    dmemPort.rdAddr,
+    RegNext(dmemPort.rdAddr),
     DontCare,
     Seq(
       0.U -> oes,

@@ -3,7 +3,7 @@ import apb.ApbTargetPort
 import chisel3._
 import chisel3.util.experimental.BoringUtils
 import leros._
-import config._
+import io.UartPins
 import dtu.DtuSubsystem
 import dtu.peripherals._
 

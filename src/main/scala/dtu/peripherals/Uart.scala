@@ -7,14 +7,9 @@ import leros.DataMemIO
 
 import leros.uart.{BufferedTx, UARTRx}
 
-class UartPins extends Bundle {
-  val tx = Output(Bool())
-  val rx = Input(Bool())
-}
-
 class Uart(bufferSize: Int, frequency: Int, baud: Int) extends Module {
 
-  val uartPins = IO(new UartPins)
+  val uartPins = IO(new io.UartPins)
 
   val dmemPort = IO(new DataMemIO(1))
 
@@ -28,7 +23,7 @@ class Uart(bufferSize: Int, frequency: Int, baud: Int) extends Module {
   rx.io.out.ready := 0.B
   rx.io.rxd := uartPins.rx
 
-  when(dmemPort.rdAddr === 0.U) {
+  when(RegNext(dmemPort.rdAddr === 0.U)) {
     dmemPort.rdData := tx.io.channel.ready ## rx.io.out.valid
   } otherwise {
     dmemPort.rdData := rx.io.out.bits
