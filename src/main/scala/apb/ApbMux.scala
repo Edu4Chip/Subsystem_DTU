@@ -3,8 +3,11 @@ package apb
 import chisel3._
 import chisel3.util._
 
+import chiseltest.formal._
+
 import misc.Helper.UIntRangeCheck
 import misc.MemoryMapHelper
+import misc.FormalHelper._
 
 class ApbMux(
     addrWidth: Int,
@@ -23,6 +26,19 @@ class ApbMux(
   io.targets.foreach { t =>
     t <> io.master
     t.psel := 0.B
+  }
+
+  io.master.targetPortProperties()
+  io.targets.foreach(_.masterPortProperties())
+
+  formalblock {
+    (io.targets, targetDecodePatterns).zipped.foreach {
+      case (port, targetDecodePattern) =>
+        assert(
+          (io.master.paddr === targetDecodePattern) -> (port.psel === io.master.psel),
+          "port psel should be equal to master psel when address is in ports range"
+        )
+    }
   }
 
   (io.targets, targetDecodePatterns).zipped.foreach {
