@@ -14,6 +14,8 @@ class PonteDecoder extends Module {
     val apb = Flipped(new ApbTargetPort(16, 32))
   })
 
+  io.apb.masterPortProperties()
+
   val dec = Module(new PonteEscaper)
   dec.io.in <> io.in
 

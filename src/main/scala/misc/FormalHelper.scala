@@ -1,0 +1,40 @@
+package misc
+
+import chisel3._
+
+import chiseltest._
+import chiseltest.formal._
+
+object FormalHelper {
+  def implies(a: Bool, b: Bool): Bool = !a || b
+  def eventually(a: Bool, within: Int): Bool = {
+    if (within == 0) a
+    else past(a, within) || eventually(a, within - 1)
+  }
+  // if I saw 'a' x clock cycles ago, I should have
+  // seen 'b' in one of the last x clock cycles
+  def leadsTo(a: Bool, b: Bool, within: Int = 1): Bool =
+    implies(past(a, within), eventually(b, within))
+
+  case class LeadsToBridge(lhs: Bool, within: Int) {
+    def |=>(rhs: Bool): Bool = leadsTo(lhs, rhs, within)
+  }
+
+  implicit class ImplicationOperator(lhs: Bool) {
+    def ->(rhs: Bool): Bool = implies(lhs, rhs)
+    def |=>(rhs: Bool): Bool = leadsTo(lhs, rhs)
+    def |(within: Int): LeadsToBridge = LeadsToBridge(lhs, within)
+  }
+
+  private var isEnabled = false
+  def enableFormalBlocks(): Unit = {
+    isEnabled = true
+  }
+  def disableFormalBlocks(): Unit = {
+    isEnabled = false
+  }
+
+  object formalblock {
+    def apply(block: => Any): Unit = if (isEnabled) block
+  }
+}
