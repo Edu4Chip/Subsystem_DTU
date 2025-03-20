@@ -1,11 +1,13 @@
-import didactic.PmodGpioPort
-import apb.ApbTargetPort
+
+
 import chisel3._
 import chisel3.util.experimental.BoringUtils
 import leros._
 import io.UartPins
+import io.PmodPins
 import dtu.DtuSubsystem
 import dtu.peripherals._
+import apb.ApbTargetPort
 
 class DtuTestHarness(prog: String) extends Module {
 
@@ -14,7 +16,7 @@ class DtuTestHarness(prog: String) extends Module {
     val apb = new ApbTargetPort(12, 32)
     val uart = new UartPins
     val bootSel = Input(Bool())
-    val pmod1 = new PmodGpioPort
+    val pmod1 = new PmodPins
   })
 
   val dtu = Module(new DtuSubsystem(prog))

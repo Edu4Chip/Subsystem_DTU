@@ -25,17 +25,12 @@ class PonteDecoderTest extends AnyFlatSpec with ChiselScalatestTester {
       val testVec = Seq.fill(n)(BigInt(32, Random))
       val accesses = Random.shuffle(Seq.range(0, n))
 
-      println(s"Test vector: ${testVec.mkString(", ")}")
-      println(s"Accesses: ${accesses.mkString(", ")}")
-
       fork {
         for (_ <- 0 until (2 * n)) {
           apb.next() match {
             case Read(addr) =>
-              println(s"Reading from $addr = ${testVec(addr.toInt)}")
               apb.respondRead(testVec(addr.toInt))
             case Write(addr, data) =>
-              println(s"Writing $data to $addr")
               assert(data == testVec(addr.toInt))
               apb.respondWrite()
             case _ =>
@@ -45,11 +40,12 @@ class PonteDecoderTest extends AnyFlatSpec with ChiselScalatestTester {
       }
 
       for (addr <- accesses) {
-        ponte.write(addr, Seq(testVec(addr).toInt))
+        ponte.write(addr, Seq(testVec(addr)))
       }
 
+
       for (addr <- accesses) {
-        val read = BigInt(ponte.read(addr, 1).head) & 0xffffffffL
+        val read = ponte.read(addr, 1).head
         assert(read == testVec(addr))
       }
     }

@@ -11,8 +11,22 @@ import mem.MemoryFactory
 import misc.Helper.WordToByte
 import misc.Helper.UIntRangeCheck
 import misc.Helper.BytesToWord
+import misc.FormalHelper._
 
+/** This module is an instruction memory for Leros which can be programmed via
+  * APB.
+  *
+  * The memory assumes word addressing on the APB interface.
+  *
+  * Internally a 32-bit wide memory is used. Leros receives the uppper or lower
+  * half-word on the instruction bus. 
+  * 
+  * During APB writes the instruction output is undefined.
+  *
+  * @param noBytes Number of bytes in the instruction memory
+  */
 class InstructionMemory(noBytes: Int) extends Module {
+
   require(noBytes % 4 == 0, "Number of bytes must be a multiple of 4")
 
   val addrWidth = log2Ceil(noBytes)
@@ -20,7 +34,9 @@ class InstructionMemory(noBytes: Int) extends Module {
   val instrPort = IO(new InstrMemIO(addrWidth))
   val apbPort = IO(new ApbTargetPort(addrWidth, 32))
 
-  apbPort.targetPortProperties()
+  properties {
+    apbPort.targetPortProperties()
+  }
 
   val mem = MemoryFactory.create(noBytes / 4)
 
@@ -30,7 +46,7 @@ class InstructionMemory(noBytes: Int) extends Module {
 
   instrPort.instr := DontCare
 
-  when(apbPort.psel && apbPort.penable) { // transaction for us
+  when(apbPort.psel && apbPort.penable) {
 
     apbPort.pready := 1.B
 

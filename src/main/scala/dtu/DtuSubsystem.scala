@@ -26,16 +26,16 @@ class DtuSubsystem(prog: String) extends DidacticSubsystem {
   val io = IO(new DidacticSubsystemIO(apbAddrWidth = 12, apbDataWidth = 32))
   io.irq := 0.B
 
-  val bootSelect = io.pmod(0).gpi(0) || io.ssCtrl(3)
+  val bootSelect = io.pmod(0).gpi(0) || io.ssCtrl(0)
 
   val leros = Module(new Leros(memAddrWidth = 16))
-  leros.reset := reset.asBool || io.ssCtrl(2)
+  leros.reset := reset.asBool || io.ssCtrl(1)
 
   val instrMem = Module(new InstructionMemory(instructionMemorySize))
   val rom = Module(new InstrMem(8, prog))
   val regBlock = Module(new peripherals.RegBlock(4))
   val gpio = Module(new peripherals.Gpio)
-  val uart = Module(new peripherals.Uart(4, 20, 5))
+  val uart = Module(new peripherals.Uart(100000000, 115200))
   val dmem = Module(new DataMemory(256))
 
   leros.imemIO <> instrMem.instrPort

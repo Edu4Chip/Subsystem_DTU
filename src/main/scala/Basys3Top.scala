@@ -2,17 +2,19 @@ import chisel3._
 import chisel3.util._
 
 import io.UartPins
+import io.PmodPins
 import ponte.Ponte
 import apb.ApbMux
 import apb.ApbTargetPort
 import dtu.DtuSubsystem
+import didactic.DidacticSubsystem
 
 class DidacticControl extends Module {
 
   val io = IO(new Bundle {
     val apb = new ApbTargetPort(4, 32)
     val ssCtrl = Output(UInt(6.W))
-    val pmod = Vec(2, Flipped(new didactic.PmodGpioPort))
+    val pmod = Vec(2, Flipped(new PmodPins))
   })
 
   val ssCtrlReg = RegInit(0.U(6.W))
@@ -75,8 +77,8 @@ class Basys3Top(subsystem: => DidacticSubsystem) extends Module {
   )
 
   io.led := Cat(
-    ponte.io.apb.pready,
-    0.U(7.W),
+    ctrl.io.ssCtrl(3,0),
+    ctrl.io.pmod(0).gpi,
     sub.io.pmod(1).gpo,
     sub.io.pmod(0).gpo
   )
@@ -85,7 +87,80 @@ class Basys3Top(subsystem: => DidacticSubsystem) extends Module {
 
 object Basys3Top extends App {
   (new stage.ChiselStage).emitSystemVerilog(
-    new Basys3Top(new DtuSubsystem("leros/asm/didactic.s")),
+    new Basys3Top(new DtuSubsystem("leros/asm/didactic_rt.s")),
     Array("--target-dir", args.headOption.getOrElse("generated"))
   )
+}
+
+import com.fazecast.jSerialComm._
+import leros.util.Assembler
+
+object Basys3Communication extends App {
+
+  val port = new ponte.PonteSerialPort("/dev/ttyUSB1", 921600)
+
+  def enableLerosReset() = {
+    val status = port.read(0x00)
+    port.send(0x00, status | 0x02)
+  }
+
+  def disableLerosReset() = {
+    val status = port.read(0x00)
+    port.send(0x00, status & ~0x02)
+  }
+
+  def bootFromRam() = {
+    val status = port.read(0x00)
+    port.send(0x00, status | 0x01)
+  }
+
+  def program(path: String) = {
+    val blop = Assembler.assemble(path)
+    val words = blop.grouped(2).map {
+      case Array(a,b) => (b << 8) | a
+      case Array(a) => a
+    }.toSeq
+    println(s"Programming $path")
+    words.foreach(println)
+    port.send(0x2000, words)
+  }
+
+
+
+  for (i <- 0 until 16) {
+    port.send(0x00, i)
+    Thread.sleep(50)
+  }
+
+  for (i <- 0 until 16) {
+    port.send(0x0C, i)
+    Thread.sleep(50)
+  }
+
+  for (i <- 0 until 16) {
+    port.send(0x00, Seq.fill(4)(i))
+    Thread.sleep(50)
+  }
+
+  port.send(0x00, Seq.fill(4)(0))
+
+
+  println("resetting leros")
+  enableLerosReset()
+  Thread.sleep(500)
+
+  println("selecting ram boot")
+  port.send(0x0C, 1)
+  bootFromRam()
+  Thread.sleep(500)
+
+  println("programming")
+  program("leros/asm/didactic.s")
+  Thread.sleep(500)
+
+  println("disabling reset")
+  disableLerosReset()
+
+  port.close()
+
 }

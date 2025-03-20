@@ -34,7 +34,7 @@ object FormalHelper {
     isEnabled = false
   }
 
-  object formalblock {
+  object properties {
     def apply(block: => Any): Unit = if (isEnabled) block
   }
 }

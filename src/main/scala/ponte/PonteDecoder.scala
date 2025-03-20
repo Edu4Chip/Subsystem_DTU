@@ -6,6 +6,8 @@ import chisel3.util._
 import apb.ApbTargetPort
 import leros.uart.UartIO
 
+import misc.FormalHelper._
+
 class PonteDecoder extends Module {
 
   val io = IO(new Bundle {
@@ -14,7 +16,9 @@ class PonteDecoder extends Module {
     val apb = Flipped(new ApbTargetPort(16, 32))
   })
 
-  io.apb.masterPortProperties()
+  properties {
+    io.apb.masterPortProperties()
+  }
 
   val dec = Module(new PonteEscaper)
   dec.io.in <> io.in

@@ -7,10 +7,23 @@ import leros.DataMemIO
 
 import leros.uart.{BufferedTx, UARTRx}
 
-class Uart(bufferSize: Int, frequency: Int, baud: Int) extends Module {
+/** Memory mapped UART peripheral attached to a data memory interface.
+  *
+  * Address 0: Reading returns the status of the UART peripheral. Bit 0
+  * indicates whether new data is available. Bit 1 indicates whether the UART
+  * peripheral is ready to accept new data.
+  *
+  * Address 1: Writing enqueues the lower byte into the transmit buffer. Reading
+  * returns the received data and removes it from the receive buffer.
+  *
+  * @param frequency
+  *   the frequency of the system clock
+  * @param baud
+  *   the baud rate of the UART
+  */
+class Uart(frequency: Int, baud: Int) extends Module {
 
   val uartPins = IO(new io.UartPins)
-
   val dmemPort = IO(new DataMemIO(1))
 
   val tx = Module(new BufferedTx(frequency, baud))

@@ -3,7 +3,18 @@ package ponte
 import com.fazecast.jSerialComm.SerialPort
 import scala.collection.mutable.ArrayBuffer
 
-class PontePort(port: SerialPort) {
+class PonteSerialPort(portDescriptor: String, baud: Int) {
+
+  val port = SerialPort.getCommPort(portDescriptor)
+
+  port.setComPortParameters(baud, 8, 1, 0)
+  port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 1000, 0)
+
+  if (port.openPort()) {
+    println("Port is open")
+  } else {
+    throw new Exception(s"Failed to open port $portDescriptor")
+  }
 
   val out = port.getOutputStream()
   val in = port.getInputStream()
@@ -24,7 +35,7 @@ class PontePort(port: SerialPort) {
     bytes.toArray
   }
 
-  def send(addr: Int, data: Seq[Int]): Unit = {
+  def send(addr: Int, data: Seq[Int]): Unit = try {
 
     val frame = ArrayBuffer[Int]()
     frame += Ponte.START_WR
@@ -36,9 +47,15 @@ class PontePort(port: SerialPort) {
 
     out.write(frame.map(_.toByte).toArray)
     out.flush()
+  } catch {
+    case e: Exception =>
+      port.closePort()
+      throw e
   }
+  def send(addr: Int, data: Int): Unit = send(addr, Seq(data))
+  def read(addr: Int): Int = read(addr, 1).head
 
-  def read(addr: Int, words: Int): Seq[Int] = {
+  def read(addr: Int, words: Int): Seq[Int] = try {
 
     val frame = ArrayBuffer[Int]()
     frame += Ponte.START_RD
@@ -55,6 +72,14 @@ class PontePort(port: SerialPort) {
       data += word
     }
     data
+  } catch {
+    case e: Exception =>
+      port.closePort()
+      throw e
+  }
+
+  def close(): Unit = {
+    port.closePort()
   }
 
 }

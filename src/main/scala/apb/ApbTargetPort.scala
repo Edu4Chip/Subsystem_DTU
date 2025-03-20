@@ -23,7 +23,7 @@ class ApbTargetPort(
 
   val MAX_RESP_TIME = 10
 
-  def targetPortProperties(): Unit = formalblock {
+  def targetPortProperties(): Unit = {
 
     val active = RegInit(0.B) // tracks ongoing transaction
     when(active && pready) {
@@ -79,7 +79,7 @@ class ApbTargetPort(
   }
 
 
-  def masterPortProperties(): Unit = formalblock {
+  def masterPortProperties(): Unit = {
 
     val active = RegInit(0.B) // tracks ongoing transaction
     when(active && pready) {

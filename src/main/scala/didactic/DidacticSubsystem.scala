@@ -1,7 +1,6 @@
-package chisel3
+package didactic
 
 import chisel3._
-import chisel3.internal.Builder
 
 import apb.ApbTargetPort
 
@@ -14,7 +13,7 @@ class DidacticSubsystemIO(apbAddrWidth: Int, apbDataWidth: Int) extends Bundle {
 
   val ssCtrl = Input(UInt(6.W))
 
-  val pmod = Vec(2, new didactic.PmodGpioPort)
+  val pmod = Vec(2, new io.PmodPins)
 }
 
 abstract class DidacticSubsystem extends Module {
