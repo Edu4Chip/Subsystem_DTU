@@ -16,8 +16,6 @@ import misc.FormalHelper._
 /** A Memory Mux for Leros' data bus connecting multiple targets to a single
   * master port.
   *
-  * The selection of the target is done using chisel bit patterns.
-  *
   * @param addrWidth
   * @param targetDecodePatterns
   */

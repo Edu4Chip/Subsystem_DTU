@@ -4,6 +4,7 @@ import chisel3._
 
 import chiseltest._
 import chiseltest.formal._
+import scala.util.DynamicVariable
 
 object FormalHelper {
   def implies(a: Bool, b: Bool): Bool = !a || b
@@ -26,15 +27,12 @@ object FormalHelper {
     def |(within: Int): LeadsToBridge = LeadsToBridge(lhs, within)
   }
 
-  private var isEnabled = false
-  def enableFormalBlocks(): Unit = {
-    isEnabled = true
-  }
-  def disableFormalBlocks(): Unit = {
-    isEnabled = false
-  }
+
+
+  private var isEnabled = new DynamicVariable(false)
+  def withPropertiesEnabled[T](block: => T): T = isEnabled.withValue(true)(block)
 
   object properties {
-    def apply(block: => Any): Unit = if (isEnabled) block
+    def apply(block: => Any): Unit = if (isEnabled.value) block
   }
 }
