@@ -3,7 +3,7 @@ package ponte
 import com.fazecast.jSerialComm.SerialPort
 import scala.collection.mutable.ArrayBuffer
 
-class PonteSerialPort(portDescriptor: String, baud: Int) {
+class PonteSerialDriver(portDescriptor: String, baud: Int) {
 
   val port = SerialPort.getCommPort(portDescriptor)
 
@@ -11,7 +11,6 @@ class PonteSerialPort(portDescriptor: String, baud: Int) {
   port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 1000, 0)
 
   if (port.openPort()) {
-    println("Port is open")
   } else {
     throw new Exception(s"Failed to open port $portDescriptor")
   }

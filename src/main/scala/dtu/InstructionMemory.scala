@@ -19,11 +19,12 @@ import misc.FormalHelper._
   * The memory assumes word addressing on the APB interface.
   *
   * Internally a 32-bit wide memory is used. Leros receives the uppper or lower
-  * half-word on the instruction bus. 
-  * 
+  * half-word on the instruction bus.
+  *
   * During APB writes the instruction output is undefined.
   *
-  * @param noBytes Number of bytes in the instruction memory
+  * @param noBytes
+  *   Number of bytes in the instruction memory
   */
 class InstructionMemory(noBytes: Int) extends Module {
 
@@ -46,28 +47,25 @@ class InstructionMemory(noBytes: Int) extends Module {
 
   instrPort.instr := DontCare
 
-  when(apbPort.psel && apbPort.penable) {
+  when(apbPort.psel) {
 
-    apbPort.pready := 1.B
+    apbPort.pready := apbPort.penable
 
-    val localAddr = apbPort.paddr(addrWidth - 1, 2)
-
-    when(apbPort.pwrite) {
+    when(!apbPort.pwrite) {
+      apbPort.prdata := mem.read(apbPort.paddr(addrWidth - 1, 2))
+    }.elsewhen(apbPort.penable && apbPort.pwrite) {
       mem.write(
-        localAddr,
+        apbPort.paddr(addrWidth - 1, 2),
         apbPort.pwdata,
         apbPort.pstrb
       )
-    } otherwise {
-      apbPort.pslverr := 1.B
     }
 
   } otherwise {
 
-    val word = mem.read(instrPort.addr(addrWidth - 1, 1))
+    val word = mem.read(instrPort.addr(addrWidth - 2, 1))
     val upr = word(31, 16)
     val lwr = word(15, 0)
     instrPort.instr := Mux(RegNext(instrPort.addr(0)), upr, lwr)
-
   }
 }

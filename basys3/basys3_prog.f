@@ -17,5 +17,5 @@ puts [irscan xc7.tap 0x09]
 puts [drscan xc7.tap 32 0]  
 
 puts "Programming FPGA..."
-pld load 0 ../build/Basys3Top.bit
+pld load 0 ../build/DtuSubsystemBasys3.bit
 exit

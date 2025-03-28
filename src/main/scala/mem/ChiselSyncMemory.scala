@@ -29,12 +29,14 @@ class ChiselSyncMemory(words: Int) extends Module with AbstractMemory {
 
   val mem = SyncReadMem(words, Vec(4, UInt(8.W)))
 
-  io.rdData := mem.read(io.wordAddr).toWord
+  io.rdData := DontCare
 
   when(io.write) {
     val data = io.wrData.toBytes(4)
     val mask = io.mask.asBools
     mem.write(io.wordAddr, data, mask)
+  }.otherwise {
+    io.rdData := mem.read(io.wordAddr).toWord
   }
 
   def read(wordAddr: UInt): UInt = {

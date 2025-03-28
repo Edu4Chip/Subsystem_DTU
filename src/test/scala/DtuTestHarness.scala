@@ -1,6 +1,7 @@
 
 
 import chisel3._
+import chisel3.util._
 import chisel3.util.experimental.BoringUtils
 import leros._
 import io.UartPins
@@ -8,20 +9,21 @@ import io.PmodPins
 import dtu.DtuSubsystem
 import dtu.peripherals._
 import apb.ApbTargetPort
+import dtu.DtuSubsystemConfig
+import apb.ApbBfm
 
-class DtuTestHarness(prog: String) extends Module {
+class DtuTestHarness(conf: DtuSubsystemConfig) extends Module {
 
   val io = IO(new Bundle {
-    val dbg = new Debug(32, 16)
-    val apb = new ApbTargetPort(12, 32)
+    val dbg = new Debug(conf.lerosSize, conf.instructionMemoryAddrWidth)
+    val apb = new ApbTargetPort(conf.apbAddrWidth, conf.apbDataWidth)
     val uart = new UartPins
     val bootSel = Input(Bool())
+    val resetLeros = Input(Bool())
     val pmod1 = new PmodPins
   })
 
-  val dtu = Module(new DtuSubsystem(prog))
-
-  dtu.reset := ~reset.asBool
+  val dtu = Module(new DtuSubsystem(conf))
 
   // Boring Utils for debugging
   io.dbg.accu := DontCare
@@ -35,10 +37,10 @@ class DtuTestHarness(prog: String) extends Module {
 
   io.apb <> dtu.io.apb
   io.pmod1 <> dtu.io.pmod(1)
-  dtu.io.pmod(0).gpi(0) := io.bootSel
-  dtu.io.pmod(0).gpi(1) := io.uart.rx
+  dtu.io.pmod(0).gpi := Cat(io.uart.rx, io.bootSel)
   io.uart.tx := dtu.io.pmod(0).gpo(2)
 
   dtu.io.irqEn := false.B
-  dtu.io.ssCtrl := 0.U
+  dtu.io.ssCtrl := Cat(io.resetLeros, io.bootSel)
+
 }

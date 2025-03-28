@@ -4,9 +4,15 @@ import chisel3._
 
 import apb.ApbTargetPort
 
-class DidacticSubsystemIO(apbAddrWidth: Int, apbDataWidth: Int) extends Bundle {
+trait DidacticConfig {
+  val apbAddrWidth: Int
+  val apbDataWidth: Int
+  val frequency: Int
+}
 
-  val apb = new ApbTargetPort(apbAddrWidth, apbDataWidth)
+class DidacticSubsystemIO(conf: DidacticConfig) extends Bundle {
+
+  val apb = new ApbTargetPort(conf.apbAddrWidth, conf.apbDataWidth)
 
   val irq = Output(Bool())
   val irqEn = Input(Bool())

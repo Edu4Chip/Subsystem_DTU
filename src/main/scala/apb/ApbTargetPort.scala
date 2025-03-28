@@ -36,8 +36,8 @@ class ApbTargetPort(
     assert(rose(active) |MAX_RESP_TIME|=> pready, 
       cf"the target signals ready at least $MAX_RESP_TIME cycles after"
     )
-    assert(pslverr -> pready, 
-      "the target signals an error when it is ready"
+    assert((psel && pslverr) -> pready, 
+      "the target signals an error at the end of the access phase"
     )
     assert(pready -> (psel && penable),
       "pready is only asserted in the access phase"
@@ -92,8 +92,8 @@ class ApbTargetPort(
     assume(rose(active) |MAX_RESP_TIME|=> pready, 
       "the target signals ready at least 4 cycles after"
     )
-    assume(pslverr -> pready, 
-      "the target signals an error when it is ready"
+    assume((psel && pslverr) -> pready, 
+      "the target signals an error at the end of the access phase"
     )
     assume(pready -> (psel && penable),
       "pready is only asserted in the access phase"

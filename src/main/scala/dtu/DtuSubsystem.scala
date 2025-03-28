@@ -14,29 +14,51 @@ import peripherals.RegBlock
 import chisel3.util.log2Ceil
 import mem.MemoryFactory
 
-object DtuSubsystemConfig {
-  val instructionMemorySize = (0x800)
-
+case class DtuSubsystemConfig(
+  romProgramPath: String,
+  instructionMemorySize: Int,
+  dataMemorySize: Int,
+  lerosSize: Int,
+  lerosMemAddrWidth: Int,
+  crossCoreRegisters: Int,
+  frequency: Int,
+  uartBaudRate: Int,
+  apbAddrWidth: Int,
+  apbDataWidth: Int
+) extends DidacticConfig {
   val instructionMemoryAddrWidth = log2Ceil(instructionMemorySize)
 }
+object DtuSubsystemConfig {
+  def default = DtuSubsystemConfig(
+    romProgramPath = "leros/asm/didactic_rt.s",
+    instructionMemorySize = 1 << 11, // 2k words
+    dataMemorySize = 1 << 8, // 256 words
+    lerosSize = 32, // 32-bit accumulator
+    lerosMemAddrWidth = 16, // 16-bit address space
+    crossCoreRegisters = 8,
+    frequency = 100000000, // 1MHz
+    uartBaudRate = 115200,
+    apbAddrWidth = 12,
+    apbDataWidth = 32
+  )
+}
 
-class DtuSubsystem(prog: String) extends DidacticSubsystem {
-  import DtuSubsystemConfig._
+class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
 
-  val io = IO(new DidacticSubsystemIO(apbAddrWidth = 12, apbDataWidth = 32))
+  val io = IO(new DidacticSubsystemIO(conf))
   io.irq := 0.B
 
   val bootSelect = io.pmod(0).gpi(0) || io.ssCtrl(0)
 
-  val leros = Module(new Leros(memAddrWidth = 16))
+  val leros = Module(new Leros(conf.lerosSize, conf.instructionMemoryAddrWidth))
   leros.reset := reset.asBool || io.ssCtrl(1)
 
-  val instrMem = Module(new InstructionMemory(instructionMemorySize))
-  val rom = Module(new InstrMem(8, prog))
-  val regBlock = Module(new peripherals.RegBlock(4))
+  val instrMem = Module(new InstructionMemory(conf.instructionMemorySize))
+  val rom = Module(new InstrMem(conf.instructionMemoryAddrWidth, conf.romProgramPath))
+  val regBlock = Module(new peripherals.RegBlock(conf.crossCoreRegisters))
   val gpio = Module(new peripherals.Gpio)
-  val uart = Module(new peripherals.Uart(100000000, 115200))
-  val dmem = Module(new DataMemory(256))
+  val uart = Module(new peripherals.Uart(conf.frequency, conf.uartBaudRate))
+  val dmem = Module(new DataMemory(conf.dataMemorySize))
 
   leros.imemIO <> instrMem.instrPort
   leros.imemIO <> rom.io
@@ -44,14 +66,14 @@ class DtuSubsystem(prog: String) extends DidacticSubsystem {
 
   ApbMux(io.apb)( // 12 bit address space
     instrMem.apbPort -> 0x000,
-    regBlock.apbPort -> 0xff0
+    regBlock.apbPort -> 0x800,
   )
 
   DataMemMux(leros.dmemIO)( // 16 bit address space
     dmem.dmemPort -> 0x0000,
     regBlock.dmemPort -> 0x8000,
-    gpio.dmemPort -> 0x8010,
-    uart.dmemPort -> 0x8020
+    gpio.dmemPort -> 0x8100,
+    uart.dmemPort -> 0x8110
   )
 
   io.pmod(1) <> gpio.pmodPort
@@ -66,7 +88,7 @@ object DtuSubsystem extends App {
   MemoryFactory.use(mem.ChiselSyncMemory.create)
 
   (new stage.ChiselStage).emitSystemVerilog(
-    new DtuSubsystem("leros/asm/didactic.s"),
+    new DtuSubsystem(DtuSubsystemConfig.default),
     Array("--target-dir", "../src/generated")
   )
 }

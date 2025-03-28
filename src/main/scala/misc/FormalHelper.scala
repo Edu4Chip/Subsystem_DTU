@@ -27,12 +27,11 @@ object FormalHelper {
     def |(within: Int): LeadsToBridge = LeadsToBridge(lhs, within)
   }
 
-
-
-  private var isEnabled = new DynamicVariable(false)
-  def withPropertiesEnabled[T](block: => T): T = isEnabled.withValue(true)(block)
+  private var propertiesEnabled = false
+  def enableProperties(): Unit = propertiesEnabled = true
+  def disableProperties(): Unit = propertiesEnabled = false
 
   object properties {
-    def apply(block: => Any): Unit = if (isEnabled.value) block
+    def apply(block: => Any): Unit = if (propertiesEnabled) block
   }
 }
