@@ -32,7 +32,7 @@ jobs:
     - name: Setup sbt
       uses: sbt/setup-sbt@v1
     - name: Setup z3
-      run: sudo apt-get install z3
+      uses: pavpanchekha/setup-z3@v0.3.0
     - name: build simulator
       run: make init
     - name: Run tests
