@@ -1,7 +1,10 @@
-PROG?=leros/asm/didactic_rt.s
+PROG?=leros-asm/didactic_rt.s
+ROM?=leros-asm/didactic_rt.s
+
+all: gen synth prog
 
 gen:
-	cd .. && sbt "runMain basys3.DtuSubsystemBasys3 leros/asm/didactic_rt.s --target-dir generated"
+	cd .. && sbt "runMain basys3.DtuSubsystemBasys3 $(ROM) --target-dir generated"
 
 synth:
 	./vivado_synth \

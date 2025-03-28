@@ -27,7 +27,7 @@ object ProgramDtuSubsystemBasys3 extends App {
 
   Thread.sleep(100)
 
-  port.uploadProgram(args.headOption.getOrElse("leros/asm/didactic_rt.s"))
+  port.uploadProgram(args.headOption.getOrElse("leros-asm/didactic_rt.s"))
 
   port.resetLerosDisable()
 

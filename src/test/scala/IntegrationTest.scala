@@ -17,7 +17,7 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
   MemoryFactory.use(RegMemory.create)
   val config = DtuSubsystemConfig.default
     .copy(
-      romProgramPath = "leros/asm/didactic.s",
+      romProgramPath = "leros-asm/didactic.s",
       uartBaudRate = 50000000
       )
   
@@ -33,7 +33,7 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
 
         val apbBfm = new apb.ApbBfm(dut.clock, dut.io.apb)
 
-        val blop = leros.util.Assembler.assemble("leros/asm/didactic.s")
+        val blop = leros.util.Assembler.assemble("leros-asm/didactic.s")
         val words = blop
           .grouped(2)
           .map {

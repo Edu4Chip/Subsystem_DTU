@@ -30,7 +30,7 @@ case class DtuSubsystemConfig(
 }
 object DtuSubsystemConfig {
   def default = DtuSubsystemConfig(
-    romProgramPath = "leros/asm/didactic_rt.s",
+    romProgramPath = "leros-asm/didactic_rt.s",
     instructionMemorySize = 1 << 11, // 2k words
     dataMemorySize = 1 << 8, // 256 words
     lerosSize = 32, // 32-bit accumulator
@@ -94,7 +94,7 @@ object DtuSubsystem extends App {
 }
 
 object Code extends App {
-  val code = Assembler.assemble("leros/asm/didactic.s")
+  val code = Assembler.assemble("leros-asm/didactic.s")
   code.grouped(2).zipWithIndex.foreach {
     case (Array(a, b), i) =>
       val pointer = 0x01052000 + i * 4
