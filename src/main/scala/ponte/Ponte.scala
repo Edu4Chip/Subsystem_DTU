@@ -14,6 +14,13 @@ object Ponte {
   val ESC_MASK = 0x20
 }
 
+/** `Ponte` is an UART-to-APB bridge that allows us to communicate with the APB
+  * network of the DTU Subsystem using a UART interface. The targeted APB bus
+  * has 16-bit addresses and 32-bit data words.
+  *
+  * @param frequency The frequency of the system clock
+  * @param baudRate The baud rate of the UART interface
+  */
 class Ponte(frequency: Int, baudRate: Int) extends Module {
 
   val io = IO(new Bundle {
