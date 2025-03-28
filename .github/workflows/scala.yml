@@ -31,6 +31,8 @@ jobs:
         distribution: 'temurin'
     - name: Setup sbt
       uses: sbt/setup-sbt@v1
+    - name: Setup z3
+      run: sudo apt-get install z3
     - name: build simulator
       run: make init
     - name: Run tests
