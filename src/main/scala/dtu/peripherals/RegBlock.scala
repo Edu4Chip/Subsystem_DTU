@@ -28,7 +28,7 @@ class RegBlock(n: Int) extends Module {
   val dmemPort = IO(new DataMemIO(aw - 2))
 
   properties {
-    apbPort.targetPortProperties()
+    apbPort.targetPortProperties("RegBlock")
   }
 
   val ibexToLerosRegs = RegInit(VecInit(Seq.fill(n)(0.U(32.W))))

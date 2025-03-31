@@ -1,31 +1,54 @@
 package dtu
 
-import basys3.Basys3SerialDriver
 import leros.util.Assembler
+import ponte.PonteSerialDriver
 
 class DtuSerialDriver(portDescriptor: String, baud: Int) {
 
-  val port = new Basys3SerialDriver(portDescriptor, baud)
+  private val port = new PonteSerialDriver(portDescriptor, baud)
+
+  private def send(addr: Int, data: Seq[Int]) = {
+    assert(addr >= 0 && addr < 0x1000)
+    port.send(addr, data)
+  }
+  private def send(addr: Int, data: Int): Unit = send(addr, Seq(data))
+
+  private def read(addr: Int, words: Int) = {
+    assert(addr >= 0 && addr < 0x1000)
+    port.read(addr, words)
+  }
+  private def read(addr: Int): Int = read(addr, 1).head
+
+
+  private def setSysCtrlBit(bit: Int) = {
+    val status = read(0xC00)
+    send(0xC00, status | (1 << bit))
+  }
+
+  private def clearSysCtrlBit(bit: Int) = {
+    val status = read(0xC00)
+    send(0xC00, status & ~(1 << bit))
+  }
 
   def resetLerosEnable() = {
-    port.setSSCtrlBit(1)
+    setSysCtrlBit(0)
   }
 
   def resetLerosDisable() = {
-    port.clearSSCtrlBit(1)
+    clearSysCtrlBit(0)
   }
 
   def resetLeros() = {
-    port.setSSCtrlBit(1)
-    port.clearSSCtrlBit(1)
+    resetLerosEnable()
+    resetLerosDisable()
   }
 
   def selectBootRom() = {
-    port.clearSSCtrlBit(0)
+    clearSysCtrlBit(1)
   }
 
   def selectBootRam() = {
-    port.setSSCtrlBit(0)
+    setSysCtrlBit(1)
   }
 
   def uploadProgram(path: String) = {

@@ -22,7 +22,7 @@ class PonteDecoder extends Module {
   })
 
   properties {
-    io.apb.masterPortProperties()
+    io.apb.masterPortProperties("PonteDecoder")
   }
 
   val dec = Module(new PonteEscaper)

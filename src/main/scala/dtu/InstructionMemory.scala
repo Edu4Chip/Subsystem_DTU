@@ -36,7 +36,7 @@ class InstructionMemory(noBytes: Int) extends Module {
   val apbPort = IO(new ApbTargetPort(addrWidth, 32))
 
   properties {
-    apbPort.targetPortProperties()
+    apbPort.targetPortProperties("InstructionMemory")
   }
 
   val mem = MemoryFactory.create(noBytes / 4)

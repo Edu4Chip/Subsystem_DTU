@@ -18,7 +18,7 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
   val config = DtuSubsystemConfig.default
     .copy(
       romProgramPath = "leros-asm/didactic.s",
-      uartBaudRate = 50000000
+      lerosBaudRate = 100000000
       )
   
 
@@ -26,12 +26,10 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "run" in {
     test(new DtuTestHarness(config))
       .withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-        dut.io.resetLeros.poke(1.B)
-        dut.clock.step(4)
-        dut.io.bootSel.poke(1.B)
-        dut.clock.step()
 
         val apbBfm = new apb.ApbBfm(dut.clock, dut.io.apb)
+
+        apbBfm.write(0xC00, 0x3).unwrap()
 
         val blop = leros.util.Assembler.assemble("leros-asm/didactic.s")
         val words = blop
@@ -48,13 +46,12 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
         }
         dut.clock.step(5)
 
-        dut.io.resetLeros.poke(0.B)
-        dut.clock.step(400)
+        apbBfm.write(0xC00, 0x2).unwrap()
+        dut.clock.step(200)
 
-        dut.io.resetLeros.poke(1.B)
-        dut.io.bootSel.poke(0.B)
+        apbBfm.write(0xC00, 0x1).unwrap()
         dut.clock.step(5)
-        dut.io.resetLeros.poke(0.B)
+        apbBfm.write(0xC00, 0x0).unwrap()
         dut.clock.step(200)
       }
   }

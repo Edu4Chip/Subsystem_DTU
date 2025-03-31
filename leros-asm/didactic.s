@@ -1,27 +1,23 @@
 nop
 
-regs:
+addr_setup:
     loadi 0x00
     loadhi 0x80
     loadh2i 0x00
     store r1
     ldaddr r1
-    loadi 0xAF
-    loadhi 0xBA
-    loadh2i 0xED
-    loadh3i 0xDA
-    stind 0
-    stind 1
-    stind 2
-    stind 3
-uart:
-    loadi 0x75
-    stind 0x45
-start:
-    loadi 0x01
-    stind 0x41
-loop:
-    ldind 0x41
+
+led_setup:
+    loadi 0
+    store r2
+
+led_write:
+    load r2
     addi 1
+    store r2
+    stind 0
     stind 0x41
-    br loop
+    andi 0x01
+    addi 0x30
+    stind 0x45
+    br led_write

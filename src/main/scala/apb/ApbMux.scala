@@ -33,8 +33,8 @@ class ApbMux(
 
   properties {
 
-    io.master.targetPortProperties()
-    io.targets.foreach(_.masterPortProperties())
+    io.master.targetPortProperties("ApbMux.master")
+    io.targets.foreach(_.masterPortProperties("ApbMux.target"))
 
     (io.targets, targetInfos).zipped.foreach {
       case (port, targetInfo) =>

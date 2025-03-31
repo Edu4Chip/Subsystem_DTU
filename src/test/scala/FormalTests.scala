@@ -62,29 +62,4 @@ class FormalTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
     verify(new apb.ApbArbiter(16, 32), Seq(BoundedCheck(10)))
   }
 
-  "ApbArbiter" should "fail" in {
-    test(new ApbArbiter(16, 32)).withAnnotations(Seq(WriteVcdAnnotation)) {
-      dut =>
-        val left = new ApbBfm(dut.clock, dut.io.masters(0))
-        val right = new ApbBfm(dut.clock, dut.io.masters(1))
-
-        dut.io.masters(0).paddr.poke(0xa.U)
-        dut.io.masters(0).psel.poke(1.B)
-        dut.io.masters(1).paddr.poke(0xb.U)
-        dut.io.masters(1).psel.poke(1.B)
-
-        dut.clock.step()
-
-        dut.io.masters(0).penable.poke(1.B)
-        dut.io.masters(1).penable.poke(1.B)
-
-        dut.clock.step(2)
-
-        dut.io.merged.pready.poke(1.B)
-
-        dut.clock.step()
-
-    }
-  }
-
 }

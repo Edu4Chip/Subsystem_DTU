@@ -17,9 +17,8 @@ class DtuTestHarness(conf: DtuSubsystemConfig) extends Module {
   val io = IO(new Bundle {
     val dbg = new Debug(conf.lerosSize, conf.instructionMemoryAddrWidth)
     val apb = new ApbTargetPort(conf.apbAddrWidth, conf.apbDataWidth)
-    val uart = new UartPins
-    val bootSel = Input(Bool())
-    val resetLeros = Input(Bool())
+    val lerosUart = new UartPins
+    val ponteUart = new UartPins
     val pmod1 = new PmodPins
   })
 
@@ -37,10 +36,11 @@ class DtuTestHarness(conf: DtuSubsystemConfig) extends Module {
 
   io.apb <> dtu.io.apb
   io.pmod1 <> dtu.io.pmod(1)
-  dtu.io.pmod(0).gpi := Cat(io.uart.rx, io.bootSel)
-  io.uart.tx := dtu.io.pmod(0).gpo(2)
+  dtu.io.pmod(0).gpi := Cat(io.lerosUart.rx, 0.B, io.ponteUart.rx, 0.B)
+  io.lerosUart.tx := dtu.io.pmod(0).gpo(2)
+  io.ponteUart.tx := dtu.io.pmod(0).gpo(0)
 
-  dtu.io.irqEn := false.B
-  dtu.io.ssCtrl := Cat(io.resetLeros, io.bootSel)
+  dtu.io.irqEn := 0.B
+  dtu.io.ssCtrl := 0.U
 
 }

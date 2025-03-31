@@ -44,9 +44,9 @@ class ApbBfm(clock: Clock, io: ApbTargetPort) {
 
     // access phase
     io.penable.poke(1.B)
-    clock.step()
     clock.stepUntil(io.pready.peekBoolean)
     if (io.pslverr.peekBoolean()) return TargetError
+    clock.step()
 
     // finish
     io.paddr.poke(0.U)
@@ -54,7 +54,6 @@ class ApbBfm(clock: Clock, io: ApbTargetPort) {
     io.psel.poke(0.B)
     io.penable.poke(0.B)
     io.pwdata.poke(0.U)
-    clock.step()
 
     AccessSuccess(())
   }

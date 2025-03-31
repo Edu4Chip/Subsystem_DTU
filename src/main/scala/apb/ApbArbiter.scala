@@ -4,6 +4,20 @@ import chisel3._
 import chisel3.util._
 import misc.FormalHelper.properties
 
+object ApbArbiter {
+  def apply(masterLeft: ApbTargetPort, masterRight: ApbTargetPort): ApbTargetPort = {
+    val addrWidth = math.max(masterLeft.addrWidth, masterRight.addrWidth)
+    val dataWidth = math.max(masterLeft.dataWidth, masterRight.dataWidth)
+    val arb = Module(new ApbArbiter(addrWidth, dataWidth))
+    arb.io.masters(0) <> masterLeft
+    arb.io.masters(1) <> masterRight
+    arb.io.merged
+  }
+  def apply(masters: Seq[ApbTargetPort]): ApbTargetPort = {
+    VecInit(masters).reduceTree(ApbArbiter(_, _))   
+  }
+}
+
 class ApbArbiter(addrWidth: Int, dataWidth: Int) extends Module {
   val io = IO(new Bundle {
     val masters = Vec(2, new ApbTargetPort(addrWidth, dataWidth))
@@ -11,8 +25,8 @@ class ApbArbiter(addrWidth: Int, dataWidth: Int) extends Module {
   })
 
   properties {
-    io.merged.masterPortProperties()
-    io.masters.foreach(_.targetPortProperties())
+    io.merged.masterPortProperties("ApbArbiter.merged")
+    io.masters.foreach(_.targetPortProperties("ApbArbiter.masters"))
   }
 
   object State extends ChiselEnum {

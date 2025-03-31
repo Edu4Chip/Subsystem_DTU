@@ -10,6 +10,7 @@ import leros.util.Assembler
 
 import apb._
 import didactic._
+import ponte.Ponte
 import peripherals.RegBlock
 import chisel3.util.log2Ceil
 import mem.MemoryFactory
@@ -22,7 +23,8 @@ case class DtuSubsystemConfig(
   lerosMemAddrWidth: Int,
   crossCoreRegisters: Int,
   frequency: Int,
-  uartBaudRate: Int,
+  lerosBaudRate: Int,
+  ponteBaudRate: Int,
   apbAddrWidth: Int,
   apbDataWidth: Int
 ) extends DidacticConfig {
@@ -37,7 +39,8 @@ object DtuSubsystemConfig {
     lerosMemAddrWidth = 16, // 16-bit address space
     crossCoreRegisters = 8,
     frequency = 100000000, // 1MHz
-    uartBaudRate = 115200,
+    lerosBaudRate = 115200,
+    ponteBaudRate = 921600,
     apbAddrWidth = 12,
     apbDataWidth = 32
   )
@@ -48,39 +51,45 @@ class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
   val io = IO(new DidacticSubsystemIO(conf))
   io.irq := 0.B
 
-  val bootSelect = io.pmod(0).gpi(0) || io.ssCtrl(0)
+  val lerosRx = io.pmod(0).gpi(3)
+  val ponteRx = io.pmod(0).gpi(1)
+
+  val sysCtrl =  Module(new SystemControl)
+  val ponte = Module(new Ponte(conf.frequency, conf.ponteBaudRate))
+  ponte.io.uart.rx := ponteRx
 
   val leros = Module(new Leros(conf.lerosSize, conf.instructionMemoryAddrWidth))
-  leros.reset := reset.asBool || io.ssCtrl(1)
+  leros.reset := reset.asBool || sysCtrl.ctrlPort.lerosReset
 
   val instrMem = Module(new InstructionMemory(conf.instructionMemorySize))
-  val rom = Module(new InstrMem(conf.instructionMemoryAddrWidth, conf.romProgramPath))
+  val rom =      Module(new InstrMem(conf.instructionMemoryAddrWidth, conf.romProgramPath))
   val regBlock = Module(new peripherals.RegBlock(conf.crossCoreRegisters))
-  val gpio = Module(new peripherals.Gpio)
-  val uart = Module(new peripherals.Uart(conf.frequency, conf.uartBaudRate))
-  val dmem = Module(new DataMemory(conf.dataMemorySize))
+  val gpio =     Module(new peripherals.Gpio)
+  val dmem =     Module(new DataMemory(conf.dataMemorySize))
+  val uart =     Module(new peripherals.Uart(conf.frequency, conf.lerosBaudRate))
+  uart.uartPins.rx := lerosRx
 
   leros.imemIO <> instrMem.instrPort
   leros.imemIO <> rom.io
-  leros.imemIO.instr := Mux(bootSelect, instrMem.instrPort.instr, rom.io.instr)
+  leros.imemIO.instr := Mux(sysCtrl.ctrlPort.lerosBootFromRam, instrMem.instrPort.instr, rom.io.instr)
 
-  ApbMux(io.apb)( // 12 bit address space
+  ApbMux(ApbArbiter(ponte.io.apb, io.apb))( // 12 bit address space
     instrMem.apbPort -> 0x000,
     regBlock.apbPort -> 0x800,
+    sysCtrl.apbPort ->  0xC00,
   )
 
   DataMemMux(leros.dmemIO)( // 16 bit address space
-    dmem.dmemPort -> 0x0000,
+    dmem.dmemPort ->     0x0000,
     regBlock.dmemPort -> 0x8000,
-    gpio.dmemPort -> 0x8100,
-    uart.dmemPort -> 0x8110
+    gpio.dmemPort ->     0x8100,
+    uart.dmemPort ->     0x8110
   )
 
   io.pmod(1) <> gpio.pmodPort
-  io.pmod(0).gpo := Cat(0.B, uart.uartPins.tx, 0.B, 0.B)
-  io.pmod(0).oe := Cat(0.B, 0.B, 1.B, 1.B)
-  uart.uartPins.rx := io.pmod(1).gpi(1)
-
+  io.pmod(0).gpo := Cat(0.B, uart.uartPins.tx, 0.B, ponte.io.uart.tx)
+  io.pmod(0).oe := Cat(1.B, 0.B, 1.B, 0.B)
+  
 }
 
 object DtuSubsystem extends App {

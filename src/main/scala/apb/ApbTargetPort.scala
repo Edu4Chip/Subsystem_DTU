@@ -23,7 +23,7 @@ class ApbTargetPort(
 
   val MAX_RESP_TIME = 10
 
-  def targetPortProperties(): Unit = {
+  def targetPortProperties(name: String): Unit = {
 
     val active = RegInit(0.B) // tracks ongoing transaction
     when(active && pready) {
@@ -34,52 +34,52 @@ class ApbTargetPort(
 
     // Target Properties
     assert(rose(active) |MAX_RESP_TIME|=> pready, 
-      cf"the target signals ready at least $MAX_RESP_TIME cycles after"
+      cf"${name}: the target signals ready at least $MAX_RESP_TIME cycles after"
     )
     assert((psel && pslverr) -> pready, 
-      "the target signals an error at the end of the access phase"
+      cf"${name}: the target signals an error at the end of the access phase"
     )
     assert(pready -> (psel && penable),
-      "pready is only asserted in the access phase"
+      cf"${name}: pready is only asserted in the access phase"
     )
 
     // Liveness Check
     assert(active |MAX_RESP_TIME|=> !active,
-      cf"an active transaction should be completed within $MAX_RESP_TIME cycles"
+      cf"${name}: an active transaction should be completed within $MAX_RESP_TIME cycles"
     )
 
 
     // Master control properties
     assert(psel && !active |=> active,
-      "asserting psel while idle leads to the access phase"
+      cf"${name}: asserting psel while idle leads to the access phase"
     )
     assume((psel && !active) -> !penable,
-      "penable has to be low during the setup phase"
+      cf"${name}: penable has to be low during the setup phase"
     )
     assume(active -> psel, 
-      "psel has to be asserted during the access phase"
+      cf"${name}: psel has to be asserted during the access phase"
     )
     assume(active -> penable, 
-      "penable has to be asserted during the access phase"
+      cf"${name}: penable has to be asserted during the access phase"
     )
 
     // Master data stability properties
     assume(active -> stable(paddr), 
-      "paddr should be stable during the setup and access phases"
+      cf"${name}: paddr should be stable during the setup and access phases"
     )
     assume(active -> stable(pwrite), 
-      "pwrite should be stable during the setup and access phases"
+      cf"${name}: pwrite should be stable during the setup and access phases"
     )
     assume(active -> stable(pstrb), 
-      "pstrb should be stable during the setup and access phases"
+      cf"${name}: pstrb should be stable during the setup and access phases"
     )
     assume(active -> stable(pwdata), 
-      "pwdata should be stable during the setup and access phases"
+      cf"${name}: pwdata should be stable during the setup and access phases"
     )
   }
 
 
-  def masterPortProperties(): Unit = {
+  def masterPortProperties(name: String): Unit = {
 
     val active = RegInit(0.B) // tracks ongoing transaction
     when(active && pready) {
@@ -90,47 +90,47 @@ class ApbTargetPort(
 
     // Target Assumptions
     assume(rose(active) |MAX_RESP_TIME|=> pready, 
-      "the target signals ready at least 4 cycles after"
+      cf"${name}: the target signals ready at least 4 cycles after"
     )
     assume((psel && pslverr) -> pready, 
-      "the target signals an error at the end of the access phase"
+      cf"${name}: the target signals an error at the end of the access phase"
     )
     assume(pready -> (psel && penable),
-      "pready is only asserted in the access phase"
+      cf"${name}: pready is only asserted in the access phase"
     )
 
     // Liveness Check
     assert(active |MAX_RESP_TIME|=> !active,
-      "an active transaction should be completed within 5 cycles"
+      cf"${name}: an active transaction should be completed within 5 cycles"
     )
 
     // Master control properties
     assert(psel && !active |=> active,
-      "asserting psel while idle leads to the access phase"
+      cf"${name}: asserting psel while idle leads to the access phase"
     )
     assert((psel && !active) -> !penable,
-      "penable has to be low during the setup phase"
+      cf"${name}: penable has to be low during the setup phase"
     )
     assert(active -> psel, 
-      "psel has to be asserted during the access phase"
+      cf"${name}: psel has to be asserted during the access phase"
     )
     assert(active -> penable, 
-      "penable has to be asserted during the access phase"
+      cf"${name}: penable has to be asserted during the access phase"
     )
 
 
     // Master data stability properties
     assert(active -> stable(paddr), 
-      "paddr should be stable during the setup and access phases"
+      cf"${name}: paddr should be stable during the setup and access phases"
     )
     assert(active -> stable(pwrite), 
-      "pwrite should be stable during the setup and access phases"
+      cf"${name}: pwrite should be stable during the setup and access phases"
     )
     assert(active -> stable(pstrb), 
-      "pstrb should be stable during the setup and access phases"
+      cf"${name}: pstrb should be stable during the setup and access phases"
     )
     assert(active -> stable(pwdata), 
-      "pwdata should be stable during the setup and access phases"
+      cf"${name}: pwdata should be stable during the setup and access phases"
     )
   }
   

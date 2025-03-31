@@ -15,7 +15,11 @@ led_write:
     load r2
     addi 1
     store r2
+    stind 0
     stind 0x41
+    andi 0x01
+    addi 0x30
+    stind 0x45
 
 loop_setup:
     loadi 80

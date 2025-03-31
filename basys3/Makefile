@@ -12,7 +12,7 @@ synth:
 		-x pins.xdc \
 		-t DtuSubsystemBasys3 \
 		-o ../build \
-		../generated/DtuSubsystemBasys3.sv
+		../generated/Tristate.sv ../generated/DtuSubsystemBasys3.sv
 
 prog:
 	openocd -f basys3_prog.f
