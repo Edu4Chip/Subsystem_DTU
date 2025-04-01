@@ -15,36 +15,34 @@ import peripherals.RegBlock
 import chisel3.util.log2Ceil
 import mem.MemoryFactory
 
-case class DtuSubsystemConfig(
-  romProgramPath: String,
-  instructionMemorySize: Int,
-  dataMemorySize: Int,
-  lerosSize: Int,
-  lerosMemAddrWidth: Int,
-  crossCoreRegisters: Int,
-  frequency: Int,
-  lerosBaudRate: Int,
-  ponteBaudRate: Int,
-  apbAddrWidth: Int,
-  apbDataWidth: Int
-) extends DidacticConfig {
-  val instructionMemoryAddrWidth = log2Ceil(instructionMemorySize)
-}
-object DtuSubsystemConfig {
-  def default = DtuSubsystemConfig(
-    romProgramPath = "leros-asm/didactic_rt.s",
-    instructionMemorySize = 1 << 11, // 2k words
-    dataMemorySize = 1 << 8, // 256 words
-    lerosSize = 32, // 32-bit accumulator
-    lerosMemAddrWidth = 16, // 16-bit address space
-    crossCoreRegisters = 8,
-    frequency = 100000000, // 1MHz
-    lerosBaudRate = 115200,
-    ponteBaudRate = 921600,
-    apbAddrWidth = 12,
-    apbDataWidth = 32
+object DtuSubsystem extends App {
+
+  MemoryFactory.use(mem.ChiselSyncMemory.create)
+
+  (new stage.ChiselStage).emitSystemVerilog(
+    new DtuSubsystem(DtuSubsystemConfig.default
+    .copy(
+      romProgramPath = "leros-asm/didactic_rt.s",
+      instructionMemorySize = 1 << 11
+    )),
+    args
   )
 }
+
+
+object IbexCode extends App {
+  val code = Assembler.assemble("leros-asm/didactic.s")
+  code.grouped(2).zipWithIndex.foreach {
+    case (Array(a, b), i) =>
+      val pointer = 0x01052000 + i * 4
+      println(f"*(volatile unsigned int*)(0x$pointer%08x) = 0x$b%04x$a%04x;")
+    case (Array(a), i) =>
+      val pointer = 0x01052000 + i * 4
+      println(f"*(volatile unsigned int*)(0x$pointer%08x) = 0x$a%04x;")
+  }
+}
+
+
 
 class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
 
@@ -92,24 +90,34 @@ class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
   
 }
 
-object DtuSubsystem extends App {
 
-  MemoryFactory.use(mem.ChiselSyncMemory.create)
-
-  (new stage.ChiselStage).emitSystemVerilog(
-    new DtuSubsystem(DtuSubsystemConfig.default),
-    Array("--target-dir", "../src/generated")
-  )
+case class DtuSubsystemConfig(
+  romProgramPath: String,
+  instructionMemorySize: Int,
+  dataMemorySize: Int,
+  lerosSize: Int,
+  lerosMemAddrWidth: Int,
+  crossCoreRegisters: Int,
+  frequency: Int,
+  lerosBaudRate: Int,
+  ponteBaudRate: Int,
+  apbAddrWidth: Int,
+  apbDataWidth: Int
+) extends DidacticConfig {
+  val instructionMemoryAddrWidth = log2Ceil(instructionMemorySize)
 }
-
-object Code extends App {
-  val code = Assembler.assemble("leros-asm/didactic.s")
-  code.grouped(2).zipWithIndex.foreach {
-    case (Array(a, b), i) =>
-      val pointer = 0x01052000 + i * 4
-      println(f"*(volatile unsigned int*)(0x$pointer%08x) = 0x$b%04x$a%04x;")
-    case (Array(a), i) =>
-      val pointer = 0x01052000 + i * 4
-      println(f"*(volatile unsigned int*)(0x$pointer%08x) = 0x$a%04x;")
-  }
+object DtuSubsystemConfig {
+  def default = DtuSubsystemConfig(
+    romProgramPath = "leros-asm/didactic_rt.s",
+    instructionMemorySize = 1 << 11, // 2kB
+    dataMemorySize = 1 << 8, // 256 Bytes
+    lerosSize = 32, // 32-bit accumulator
+    lerosMemAddrWidth = 16, // 16-bit address space
+    crossCoreRegisters = 4,
+    frequency = 100000000, // 1MHz
+    lerosBaudRate = 115200,
+    ponteBaudRate = 921600,
+    apbAddrWidth = 12,
+    apbDataWidth = 32
+  )
 }
