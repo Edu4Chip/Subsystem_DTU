@@ -2,6 +2,10 @@
 
 This folder contains scripts and makefiles for building executables for the Leros processor architecture. The toolchain leverages the LLVM infrastructure customized for Leros.
 
+***Important Note:*** The Leros LLVM toolchain is not compatible with the standard LLVM toolchain. It is specifically 
+designed for the Leros architecture and should not be used interchangeably with other LLVM-based projects. 
+As for now, 2025-04-29, the only systems who support this are x86 based systems.
+
 ## LLVM Toolchain for Leros
 
 The Leros LLVM toolchain provides a complete development environment for compiling C code to Leros machine code. The toolchain includes:
@@ -12,11 +16,13 @@ The Leros LLVM toolchain provides a complete development environment for compili
 - `llvm-objdump`: Disassembler
 - `llvm-objcopy`: Binary utilities
 
+*Note: this assumes that Leros unique LLVM binaries are your system default*
+
 ## Building Programs
 
 You can use the provided Makefile to build programs for Leros:
 
-```bash
+```zsh
 # Compile a specific program (will search in src directory)
 make PROG=hello
 
@@ -35,12 +41,8 @@ The build process generates several files:
 - `.bin`: Raw binary (for loading into Leros memory)
 - `.dis`: Disassembly listing (for debugging)
 
-## Memory Layout
-
-The default memory layout places code at address 0x0 and initializes stack and other segments according to the Leros ABI. Custom memory layouts can be specified using linker scripts.
-
 ## Examples
 
-Example programs are located in the `src` directory. These demonstrate basic functionality and Leros-specific features.
+Fibonacci sequence example with the already compiled binaries, code and dump are located in the `src`, `build` and `bin` directory.
 
 For detailed information about the Leros architecture and instruction set, see the [docs.md](docs.md) file.
