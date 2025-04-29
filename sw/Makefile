@@ -15,7 +15,7 @@ OBJDUMP = llvm-objdump
 
 # Flags
 CFLAGS = -target leros32 -O2
-LDFLAGS = -Wl,-T,leros.ld
+LDFLAGS = 
 
 # Default program to build
 PROG ?= fibonacci_sequence
