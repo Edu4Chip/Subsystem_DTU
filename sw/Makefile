@@ -75,6 +75,7 @@ help:
 	@echo "  make PROG=name    Build specific program"
 	@echo "  make all          Build all programs"
 	@echo "  make clean        Remove build artifacts"
+	@echo "  make disassemble   Disassemble the program"
 	@echo "  make help         Show this help message"
 	@echo ""
 	@echo "Output files are placed in:"
