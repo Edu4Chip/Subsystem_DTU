@@ -1,0 +1,194 @@
+
+build/fibonacci_sequence.out:	file format ELF32-leros
+
+Disassembly of section .text:
+start:
+   11000:	f0 21 	loadi	-16
+   11002:	ff 29 	loadhi	-1
+   11004:	ff 2a 	loadh2i	-1
+   11006:	7f 2b 	loadh3i	127
+   11008:	01 30 	store	r1
+   1100a:	00 21 	loadi	0
+   1100c:	64 30 	store	r100
+   1100e:	01 21 	loadi	1
+   11010:	65 30 	store	r101
+   11012:	80 21 	loadi	-128
+   11014:	00 29 	loadhi	0
+   11016:	66 30 	store	r102
+   11018:	00 21 	loadi	0
+   1101a:	80 29 	loadhi	-128
+   1101c:	00 2a 	loadh2i	0
+   1101e:	67 30 	store	r103
+   11020:	00 21 	loadi	0
+   11022:	80 2b 	loadh3i	-128
+   11024:	68 30 	store	r104
+   11026:	ff 21 	loadi	-1
+   11028:	00 29 	loadhi	0
+   1102a:	69 30 	store	r105
+   1102c:	ff 29 	loadhi	-1
+   1102e:	00 2a 	loadh2i	0
+   11030:	6a 30 	store	r106
+   11032:	00 21 	loadi	0
+   11034:	ff 2a 	loadh2i	-1
+   11036:	6b 30 	store	r107
+   11038:	ff 21 	loadi	-1
+   1103a:	7f 2b 	loadh3i	127
+   1103c:	6c 30 	store	r108
+   1103e:	10 21 	loadi	16
+   11040:	11 29 	loadhi	17
+   11042:	01 2a 	loadh2i	1
+   11044:	00 2b 	loadh3i	0
+   11046:	78 30 	store	r120
+   11048:	28 21 	loadi	40
+   1104a:	11 29 	loadhi	17
+   1104c:	01 2a 	loadh2i	1
+   1104e:	00 2b 	loadh3i	0
+   11050:	79 30 	store	r121
+   11052:	40 21 	loadi	64
+   11054:	11 29 	loadhi	17
+   11056:	01 2a 	loadh2i	1
+   11058:	00 2b 	loadh3i	0
+   1105a:	7a 30 	store	r122
+   1105c:	e4 21 	loadi	-28
+   1105e:	10 29 	loadhi	16
+   11060:	01 2a 	loadh2i	1
+   11062:	00 2b 	loadh3i	0
+   11064:	00 40 	jal	r0
+   11066:	00 ff 	scall	0
+
+fibonacci:
+   11068:	01 20 	load	r1
+   1106a:	f0 09 	addi	-16
+   1106c:	01 30 	store	r1
+   1106e:	00 20 	load	r0
+   11070:	01 50 	ldaddr	r1
+   11072:	03 70 	stind	12
+   11074:	02 20 	load	r2
+   11076:	02 70 	stind	8
+   11078:	01 20 	load	r1
+   1107a:	10 09 	addi	16
+   1107c:	02 30 	store	r2
+   1107e:	65 20 	load	r101
+   11080:	05 50 	ldaddr	r5
+   11082:	01 70 	stind	4
+   11084:	64 20 	load	r100
+   11086:	00 70 	stind	0
+   11088:	03 21 	loadi	3
+   1108a:	06 30 	store	r6
+   1108c:	04 20 	load	r4
+   1108e:	06 0c 	sub	r6
+   11090:	20 c0 	brn	64
+   11092:	01 80 	br	2
+   11094:	65 20 	load	r101
+   11096:	05 50 	ldaddr	r5
+   11098:	02 70 	stind	8
+   1109a:	04 20 	load	r4
+   1109c:	06 0c 	sub	r6
+   1109e:	19 90 	brz	50
+   110a0:	01 80 	br	2
+   110a2:	04 20 	load	r4
+   110a4:	fd 09 	addi	-3
+   110a6:	04 30 	store	r4
+   110a8:	05 20 	load	r5
+   110aa:	0c 09 	addi	12
+   110ac:	05 30 	store	r5
+   110ae:	65 20 	load	r101
+   110b0:	06 30 	store	r6
+   110b2:	01 80 	br	2
+   110b4:	05 50 	ldaddr	r5
+   110b6:	fe 60 	ldind	-8
+   110b8:	07 30 	store	r7
+   110ba:	06 08 	add	r6
+   110bc:	06 30 	store	r6
+   110be:	00 70 	stind	0
+   110c0:	05 20 	load	r5
+   110c2:	04 09 	addi	4
+   110c4:	05 30 	store	r5
+   110c6:	04 20 	load	r4
+   110c8:	ff 09 	addi	-1
+   110ca:	04 30 	store	r4
+   110cc:	02 90 	brz	4
+   110ce:	f3 8f 	br	-26
+   110d0:	01 50 	ldaddr	r1
+   110d2:	02 60 	ldind	8
+   110d4:	02 30 	store	r2
+   110d6:	03 60 	ldind	12
+   110d8:	00 30 	store	r0
+   110da:	01 20 	load	r1
+   110dc:	10 09 	addi	16
+   110de:	01 30 	store	r1
+   110e0:	00 20 	load	r0
+   110e2:	00 40 	jal	r0
+
+main:
+   110e4:	01 20 	load	r1
+   110e6:	f0 09 	addi	-16
+   110e8:	01 30 	store	r1
+   110ea:	00 20 	load	r0
+   110ec:	01 50 	ldaddr	r1
+   110ee:	03 70 	stind	12
+   110f0:	02 20 	load	r2
+   110f2:	02 70 	stind	8
+   110f4:	01 20 	load	r1
+   110f6:	10 09 	addi	16
+   110f8:	55 21 	loadi	85
+   110fa:	10 29 	loadhi	16
+   110fc:	04 30 	store	r4
+   110fe:	02 60 	ldind	8
+   11100:	02 30 	store	r2
+   11102:	03 60 	ldind	12
+   11104:	00 30 	store	r0
+   11106:	01 20 	load	r1
+   11108:	10 09 	addi	16
+   1110a:	01 30 	store	r1
+   1110c:	00 20 	load	r0
+   1110e:	00 40 	jal	r0
+
+__ashlsi3:
+   11110:	05 20 	load	r5
+   11112:	09 90 	brz	18
+   11114:	04 20 	load	r4
+   11116:	04 08 	add	r4
+   11118:	04 30 	store	r4
+   1111a:	05 20 	load	r5
+   1111c:	01 0d 	subi	1
+   1111e:	03 90 	brz	6
+   11120:	05 30 	store	r5
+   11122:	f9 8f 	br	-14
+
+.end:
+   11124:	00 20 	load	r0
+   11126:	00 40 	jal	r0
+
+__ashrsi3:
+   11128:	05 20 	load	r5
+   1112a:	09 90 	brz	18
+   1112c:	04 20 	load	r4
+   1112e:	00 10 	sra	
+   11130:	04 30 	store	r4
+   11132:	05 20 	load	r5
+   11134:	01 0d 	subi	1
+   11136:	03 90 	brz	6
+   11138:	05 30 	store	r5
+   1113a:	f9 8f 	br	-14
+
+.end:
+   1113c:	00 20 	load	r0
+   1113e:	00 40 	jal	r0
+
+__lshrsi3:
+   11140:	05 20 	load	r5
+   11142:	0a 90 	brz	20
+   11144:	04 20 	load	r4
+   11146:	00 10 	sra	
+   11148:	6c 22 	and	r108
+   1114a:	04 30 	store	r4
+   1114c:	05 20 	load	r5
+   1114e:	01 0d 	subi	1
+   11150:	03 90 	brz	6
+   11152:	05 30 	store	r5
+   11154:	f8 8f 	br	-16
+
+.end:
+   11156:	00 20 	load	r0
+   11158:	00 40 	jal	r0
