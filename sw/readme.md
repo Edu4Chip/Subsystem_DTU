@@ -45,4 +45,4 @@ The build process generates several files:
 
 Fibonacci sequence example with the already compiled binaries, code and dump are located in the `src`, `build` and `bin` directory.
 
-For detailed information about the Leros architecture and instruction set, see the [docs.md](docs.md) file.
+For detailed information about the Leros architecture and instruction set, see the [the documentation website](https://leros-dev.github.io/).
