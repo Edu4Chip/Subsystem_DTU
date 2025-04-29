@@ -4,3 +4,6 @@
 [submodule "leros"]
 	path = leros
 	url = git@github.com:leros-dev/leros.git
+[submodule "open-source-hardware-development-environment"]
+	path = open-source-hardware-development-environment
+	url = https://codeberg.org/Kodalem/open-source-hardware-development-environment
