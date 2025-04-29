@@ -124,4 +124,4 @@ docker run -it -rm \
 
 Remember to change the local path to your codebase in the Docker command if it is needed elsewhere.
 
-For more detailed instructions, see the [development environment README](open-source-hardware-development-environment/README.md).
+For more detailed instructions, see the [development environment README from the project](open-source-hardware-development-environment/README.md) or from the [repository page](https://codeberg.org/Kodalem/open-source-hardware-development-environment) of the submodule 
