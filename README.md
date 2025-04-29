@@ -133,4 +133,4 @@ To re-enter the container later:
 docker start -i hw-dev-container
 ```
 
-For more detailed instructions, see the [development environment README](open-source-hardware-development-environment/README.md).
+For more detailed instructions, see the [development environment README from the project](open-source-hardware-development-environment/README.md) or from the [repository page](https://codeberg.org/Kodalem/open-source-hardware-development-environment) of the submodule 
