@@ -110,27 +110,18 @@ nix develop open-source-hardware-development-environment/
 
 ### Using Docker Alternative
 
-If you prefer Docker, you can set up persistent volumes:
-
 ```zsh
-# Create persistent volumes
-docker volume create hw_pdk_data
-docker volume create hw_nix_store
-
 # Build the Docker image
 docker build -t hw-dev-env open-source-hardware-development-environment/
 
-# Run with persistent storage
-docker run -it \
-  --name hw-dev-container \
-  -v hw_pdk_data:/home/developer/.openlane-pdks \
-  -v hw_nix_store:/nix/store \
-  hw-dev-env
+# Run the Docker container with the development environment
+# in the current directory
+docker run -it -rm \
+  -v .:/home/developer/workdir/ \
+  hw-dev-env \
+  nix develop
 ```
 
-To re-enter the container later:
-```zsh
-docker start -i hw-dev-container
-```
+Remember to change the local path to your codebase in the Docker command if it is needed elsewhere.
 
 For more detailed instructions, see the [development environment README](open-source-hardware-development-environment/README.md).
