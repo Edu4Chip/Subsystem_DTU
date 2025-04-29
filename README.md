@@ -74,3 +74,63 @@ new DtuSubsystem(
 ## Memory Map
 
 ![Memory Maps](doc/figures/toplevel-dtu-addrmap.svg)
+
+## Development Environment
+
+The DTU subsystem development can be done with either Docker or Nix/Lix.
+
+### Installation Options
+
+- **Lix** (Recommended): [https://lix.systems/install/](https://lix.systems/install/)
+  - A modern implementation of the Nix language with improved usability
+  - Commited to maintaining purpose for open source community than commercial interests.
+  - Built for better error messages and developer experience
+  - Fully compatible with Nix packages and flakes
+  - Designed to evolve while maintaining backward compatibility
+
+- **Nix**: [https://nixos.org/download](https://nixos.org/download)
+  - The original package manager that Lix is based on
+
+- **Docker**: [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
+  - Container-based alternative if you prefer not to install Nix/Lix
+
+### Quick Start with Nix/Lix
+
+1. Enter the development environment (assuming from project root):
+```zsh
+nix develop open-source-hardware-development-environment/
+```
+
+2. You'll now have access to all development tools including:
+   - Openlane 2 with all dependencies
+   - Verilator for Verilog simulation
+   - SBT for Scala/Chisel development
+   - Leros LLVM toolchain (x86 platforms only)
+   - ZSH with developer-friendly configuration
+
+### Using Docker Alternative
+
+If you prefer Docker, you can set up persistent volumes:
+
+```zsh
+# Create persistent volumes
+docker volume create hw_pdk_data
+docker volume create hw_nix_store
+
+# Build the Docker image
+docker build -t hw-dev-env open-source-hardware-development-environment/
+
+# Run with persistent storage
+docker run -it \
+  --name hw-dev-container \
+  -v hw_pdk_data:/home/developer/.openlane-pdks \
+  -v hw_nix_store:/nix/store \
+  hw-dev-env
+```
+
+To re-enter the container later:
+```zsh
+docker start -i hw-dev-container
+```
+
+For more detailed instructions, see the [development environment README](open-source-hardware-development-environment/README.md).
