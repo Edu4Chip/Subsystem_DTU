@@ -1,3 +1,0 @@
-# sim
-
-This folder would keep in it scripts and makefiles for managing sim build and sim running.
