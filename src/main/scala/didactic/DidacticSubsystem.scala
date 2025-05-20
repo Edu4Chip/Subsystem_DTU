@@ -29,7 +29,7 @@ abstract class DidacticSubsystem extends Module {
 
   val io: DidacticSubsystemIO
 
-  def printMemoryMap(): Unit = {
+  def printMemoryMap(): this.type = {
     println(s"--- Apb Memory Map ${"-" * 49}")
     val targets = io.apb.getTargets()
     targets.foreach { target =>
@@ -38,6 +38,7 @@ abstract class DidacticSubsystem extends Module {
       )
     }
     println(s"${"-" * (19 + 49)}")
+    this
   }
 
 }

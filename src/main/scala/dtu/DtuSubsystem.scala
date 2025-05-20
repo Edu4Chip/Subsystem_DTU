@@ -35,7 +35,7 @@ object DtuSubsystem extends App {
           instructionMemorySize = 1 << 10,
           dataMemorySize = 1 << 10
         )
-    ),
+    ).printMemoryMap(),
     args.drop(2),
     Array("--lowering-options=disallowLocalVariables,disallowPackedArrays")
   )
@@ -110,7 +110,6 @@ class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
   io.gpio.outputEnable := gpio.gpioPort.outputEnable ## 0xa.U(4.W)
   gpio.gpioPort.in := io.gpio.in(conf.gpioPins - 1, 4)
 
-  printMemoryMap()
 }
 
 case class DtuSubsystemConfig(

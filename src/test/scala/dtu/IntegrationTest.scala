@@ -1,3 +1,5 @@
+package dtu
+
 import chisel3._
 import chiseltest._
 import chiseltest.formal._
@@ -8,11 +10,9 @@ import mem.MemoryFactory
 import mem.RegMemory
 import dtu.DtuSubsystemConfig
 import misc.FormalHelper
+import java.io.File
 
-class IntegrationTest
-    extends AnyFlatSpec
-    with ChiselScalatestTester
-    with Formal {
+class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
 
   behavior of "DTU Subsystem"
 
@@ -25,26 +25,32 @@ class IntegrationTest
       lerosBaudRate = 100000000
     )
 
-  it should "run" in {
-    test(new DtuTestHarness(config))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
-        dut =>
-          val bfm = new DtuTestHarnessBfm(dut)
+  def testProgram(prog: String)(dut: DtuTestHarness): Unit = {
+    val bfm = new DtuTestHarnessBfm(dut)
 
-          bfm.resetLerosEnable()
-          bfm.selectBootRam()
+    bfm.resetLerosEnable()
+    bfm.selectBootRam()
+    bfm.uploadProgram(prog)
+    bfm.resetLerosDisable()
 
-          bfm.uploadProgram("leros-asm/didactic.s")
-          dut.clock.step(5)
+    while (!dut.io.dbg.exit.peekBoolean()) {
+      dut.clock.step()
+    }
 
-          bfm.resetLerosDisable()
-          dut.clock.step(200)
+    val res = dut.io.dbg.accu
+      .expect(1.U, "Accu shall be one at the end of a test case.\n")
+  }
 
-          bfm.resetLerosEnable()
-          bfm.selectBootRom()
-          dut.clock.step(5)
-          bfm.resetLerosDisable()
-          dut.clock.step(200)
-      }
+  val progs = new File("leros/asm/test")
+    .listFiles()
+    .filter(_.isFile)
+    .map(_.getName())
+
+  println(progs.mkString(", "))
+  progs.foreach { prog =>
+    it should s"upload and execute $prog" in {
+      println(s"Testing program: $prog")
+      test(new DtuTestHarness(config))(testProgram(prog))
+    }
   }
 }

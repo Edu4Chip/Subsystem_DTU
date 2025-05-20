@@ -105,12 +105,12 @@ object DataMemMux {
     }
 
     // print debug information
-    println(s"DataMemMux(${master.memAddrWidth}.W):")
-    targets.foreach { case t =>
-      println(
-        s"  ${t.portName} (${t.byteAddrWidth}.W): 0x${t.byteAddrRange.start.toHexString} - 0x${t.byteAddrRange.end.toHexString}"
-      )
-    }
+    // println(s"DataMemMux(${master.memAddrWidth}.W):")
+    // targets.foreach { case t =>
+    //   println(
+    //     s"  ${t.portName} (${t.byteAddrWidth}.W): 0x${t.byteAddrRange.start.toHexString} - 0x${t.byteAddrRange.end.toHexString}"
+    //   )
+    // }
 
     // create the DataMemMux instance
     val dmemMux = Module(
