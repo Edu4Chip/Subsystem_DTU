@@ -33,10 +33,6 @@ jobs:
       uses: sbt/setup-sbt@v1
     - name: Setup z3
       uses: pavpanchekha/setup-z3@v0.3.0
-    - name: Setup verilator
-      run: |
-        sudo apt-get install -y verilator
-        verilator --version
     - name: build simulator
       run: make init
     - name: Run tests
