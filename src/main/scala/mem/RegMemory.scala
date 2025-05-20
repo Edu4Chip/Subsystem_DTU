@@ -35,7 +35,7 @@ class RegMemory(words: Int) extends Module with AbstractMemory {
   when(io.write) {
     val data = io.wrData.toBytes(4)
     val mask = io.mask.asBools
-    (mem(io.wordAddr), data, mask).zipped.foreach { (m, d, msk) =>
+    mem(io.wordAddr).lazyZip(data).lazyZip(mask).foreach { (m, d, msk) =>
       when(msk) {
         m := d
       }

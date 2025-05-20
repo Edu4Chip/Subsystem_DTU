@@ -5,7 +5,7 @@ import chisel3.util._
 
 import leros.uart.{Rx, Tx}
 import io.UartPins
-import apb.ApbTargetPort
+import apb.ApbPort
 
 object Ponte {
   val START_WR = 0xaa
@@ -18,14 +18,16 @@ object Ponte {
   * network of the DTU Subsystem using a UART interface. The targeted APB bus
   * has 16-bit addresses and 32-bit data words.
   *
-  * @param frequency The frequency of the system clock
-  * @param baudRate The baud rate of the UART interface
+  * @param frequency
+  *   The frequency of the system clock
+  * @param baudRate
+  *   The baud rate of the UART interface
   */
 class Ponte(frequency: Int, baudRate: Int) extends Module {
 
   val io = IO(new Bundle {
     val uart = new UartPins
-    val apb = Flipped(new ApbTargetPort(16, 32))
+    val apb = ApbPort.masterPort(16, 32)
   })
 
   val uartRx = Module(new Rx(frequency, baudRate))

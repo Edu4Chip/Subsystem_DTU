@@ -3,6 +3,7 @@ package ponte
 import chisel3._
 
 import chiseltest._
+import chiseltest.formal._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
@@ -12,11 +13,18 @@ import apb.ApbTargetBfm
 import apb.ApbTargetBfm._
 import misc.FormalHelper
 
-class PonteDecoderTest extends AnyFlatSpec with ChiselScalatestTester {
+class PonteDecoderTest
+    extends AnyFlatSpec
+    with ChiselScalatestTester
+    with Formal {
 
   behavior of "PonteDecoder"
 
   FormalHelper.enableProperties()
+
+  it should "satisfy Apb properties" in {
+    verify(new ponte.PonteDecoder, Seq(BoundedCheck(10)))
+  }
 
   it should "decode a frame" in {
     test(new PonteDecoder).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>

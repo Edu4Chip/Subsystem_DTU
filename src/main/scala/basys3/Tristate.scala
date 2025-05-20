@@ -11,11 +11,9 @@ class Tristate(w: Int) extends BlackBox(Map("W" -> w)) with HasBlackBoxInline {
     val busDriveValue = Input(UInt(w.W))
     val bus = Analog(w.W)
   })
-  
 
-  
-
-  setInline(s"Tristate.sv",
+  setInline(
+    s"Tristate.sv",
     s"""
        |module Tristate #(parameter W = 1) (
        |    output  logic [W-1:0] busReadValue,
@@ -33,5 +31,6 @@ class Tristate(w: Int) extends BlackBox(Map("W" -> w)) with HasBlackBoxInline {
        |    endgenerate
        |
        |endmodule
-       |""".stripMargin)
+       |""".stripMargin
+  )
 }

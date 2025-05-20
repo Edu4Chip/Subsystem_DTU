@@ -6,8 +6,8 @@ import chisel3.util._
 import leros.uart.UartIO
 
 /** The `PonteEscaper` provides flags for the start of a read or write
-  * operation. It takes care of the escaping mechanism, blocking the
-  * escape byte and restoring the escaped byte.
+  * operation. It takes care of the escaping mechanism, blocking the escape byte
+  * and restoring the escaped byte.
   */
 class PonteEscaper extends Module {
 

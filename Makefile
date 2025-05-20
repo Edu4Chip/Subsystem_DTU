@@ -1,16 +1,18 @@
 # Just remember commands, for now.
 
-ROM ?= base.s
+PROG ?= leros-asm/didactic_rt.s
 BUILD_DIR ?= generated
 
 init:
 	git submodule update --init --recursive
 
 generate:
-	sbt "runMain dtu.DtuSubsystem --target-dir $(BUILD_DIR)"
+	sbt "runMain dtu.DtuSubsystem didacticSram $(PROG) --target-dir $(BUILD_DIR)"
 
 clean:
 	rm -rf $(BUILD_DIR)
+	$(MAKE) -C openlane clean
+	$(MAKE) -C basys3 clean
 
 test:
 	sbt test

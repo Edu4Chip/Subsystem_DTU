@@ -1,10 +1,10 @@
 import chisel3._
 
 package object io {
-  class PmodPins() extends Bundle() {
-    val gpi = Input(UInt(4.W))
-    val gpo = Output(UInt(4.W))
-    val oe = Output(UInt(4.W)) // output enable active low
+  class GpioPins(w: Int) extends Bundle() {
+    val in = Input(UInt(w.W))
+    val out = Output(UInt(w.W))
+    val outputEnable = Output(UInt(w.W)) // output enable active low
   }
   class UartPins extends Bundle {
     val tx = Output(Bool())

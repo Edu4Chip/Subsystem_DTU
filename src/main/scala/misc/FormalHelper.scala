@@ -17,21 +17,22 @@ object FormalHelper {
   def leadsTo(a: Bool, b: Bool, within: Int = 1): Bool =
     implies(past(a, within), eventually(b, within))
 
-  case class LeadsToBridge(lhs: Bool, within: Int) {
+  case class BoundedLeadsToBridge(lhs: Bool, within: Int) {
     def |=>(rhs: Bool): Bool = leadsTo(lhs, rhs, within)
   }
 
   implicit class ImplicationOperator(lhs: Bool) {
+    def within(within: Int): BoundedLeadsToBridge =
+      BoundedLeadsToBridge(lhs, within)
     def ->(rhs: Bool): Bool = implies(lhs, rhs)
     def |=>(rhs: Bool): Bool = leadsTo(lhs, rhs)
-    def |(within: Int): LeadsToBridge = LeadsToBridge(lhs, within)
   }
 
   private var propertiesEnabled = false
   def enableProperties(): Unit = propertiesEnabled = true
   def disableProperties(): Unit = propertiesEnabled = false
 
-  object properties {
+  object formalProperties {
     def apply(block: => Any): Unit = if (propertiesEnabled) block
   }
 }

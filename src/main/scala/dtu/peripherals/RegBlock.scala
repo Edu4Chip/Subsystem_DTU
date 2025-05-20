@@ -3,10 +3,10 @@ package dtu.peripherals
 import chisel3._
 import chisel3.util._
 
-import apb.ApbTargetPort
+import apb._
 
 import leros.DataMemIO
-import misc.FormalHelper.properties
+import misc.FormalHelper.formalProperties
 
 /** This module contains n 32-bit registers for communication between the Ibex
   * and Leros cores.
@@ -24,10 +24,10 @@ class RegBlock(n: Int) extends Module {
   // address width
   val aw = log2Ceil(n * 4)
 
-  val apbPort = IO(new ApbTargetPort(aw, 32))
+  val apbPort = IO(ApbPort.targetPort(aw, 32))
   val dmemPort = IO(new DataMemIO(aw - 2))
 
-  properties {
+  formalProperties {
     apbPort.targetPortProperties("RegBlock")
   }
 

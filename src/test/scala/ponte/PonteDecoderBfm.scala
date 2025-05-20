@@ -32,7 +32,10 @@ class PonteDecoderBfm(p: PonteDecoder) {
   }
 
   private def receiveWord(): BigInt = {
-    Seq.fill(4)(receiveByte()).map(BigInt(_)).foldRight(BigInt(0))((x, acc) => (acc << 8) | x)
+    Seq
+      .fill(4)(receiveByte())
+      .map(BigInt(_))
+      .foldRight(BigInt(0))((x, acc) => (acc << 8) | x)
   }
 
   private def toBytes(x: BigInt, n: Int): Seq[Int] =

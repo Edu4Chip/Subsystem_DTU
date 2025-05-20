@@ -6,6 +6,13 @@ import chisel3.util._
 import leros.DataMemIO
 import mem.MemoryFactory
 
+/** A simple data memory module for the DTU.
+  *
+  * Uses the MemoryFactory to create a memory of the specified size.
+  *
+  * @param noBytes
+  *   the size of the memory in bytes
+  */
 class DataMemory(noBytes: Int) extends Module {
 
   val addrWidth = log2Ceil(noBytes)

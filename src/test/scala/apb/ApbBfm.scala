@@ -3,7 +3,6 @@ import chisel3._
 
 import chiseltest._
 
-
 import misc.TestingHelper.ClockExtension
 
 object ApbBfm {
@@ -24,7 +23,7 @@ object ApbBfm {
   case object TargetError extends AccessResult[Nothing]
 }
 
-class ApbBfm(clock: Clock, io: ApbTargetPort) {
+class ApbBfm(clock: Clock, io: ApbPort) {
 
   import ApbBfm._
 
@@ -69,7 +68,7 @@ class ApbBfm(clock: Clock, io: ApbTargetPort) {
 
     // access phase
     io.penable.poke(1.B)
-    clock.stepUntil(io.pready.peekBoolean)
+    clock.stepUntil(io.pready.peekBoolean, 10)
     if (io.pslverr.peekBoolean()) return TargetError
     val rdData = io.prdata.peekInt()
     clock.step()
@@ -80,7 +79,6 @@ class ApbBfm(clock: Clock, io: ApbTargetPort) {
     io.psel.poke(0.B)
     io.penable.poke(0.B)
     io.pwdata.poke(0.U)
-    
 
     AccessSuccess(rdData)
   }

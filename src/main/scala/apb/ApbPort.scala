@@ -3,14 +3,27 @@ package apb
 import chisel3._
 import chisel3.util._
 
+import scala.collection.mutable
+
 import chiseltest._
 import chiseltest.formal._
 import misc.FormalHelper._
 
-class ApbTargetPort(
+object ApbPort {
+  def targetPort(addrWidth: Int, dataWidth: Int): ApbPort = {
+    new ApbPort(addrWidth, dataWidth)
+  }
+
+  def masterPort(addrWidth: Int, dataWidth: Int): ApbPort = {
+    Flipped(new ApbPort(addrWidth, dataWidth))
+  }
+}
+
+class ApbPort(
     val addrWidth: Int,
     val dataWidth: Int
 ) extends Bundle {
+
   val paddr = Input(UInt(addrWidth.W))
   val psel = Input(Bool())
   val penable = Input(Bool())
@@ -20,6 +33,15 @@ class ApbTargetPort(
   val pready = Output(Bool())
   val prdata = Output(UInt(dataWidth.W))
   val pslverr = Output(Bool())
+
+  val children = mutable.ListBuffer[ApbTarget]()
+  var addChild: ApbTarget => Unit = child => {
+    children += child
+  }
+
+  def getTargets(): Seq[ApbTarget] = {
+    children.toSeq
+  }
 
   val MAX_RESP_TIME = 10
 
@@ -33,51 +55,61 @@ class ApbTargetPort(
     }
 
     // Target Properties
-    assert(rose(active) |MAX_RESP_TIME|=> pready, 
+    assert(
+      rose(active).within(MAX_RESP_TIME) |=> pready,
       cf"${name}: the target signals ready at least $MAX_RESP_TIME cycles after"
     )
-    assert((psel && pslverr) -> pready, 
+    assert(
+      (psel && pslverr) -> pready,
       cf"${name}: the target signals an error at the end of the access phase"
     )
-    assert(pready -> (psel && penable),
+    assert(
+      pready -> (psel && penable),
       cf"${name}: pready is only asserted in the access phase"
     )
 
     // Liveness Check
-    assert(active |MAX_RESP_TIME|=> !active,
+    assert(
+      active.within(MAX_RESP_TIME) |=> !active,
       cf"${name}: an active transaction should be completed within $MAX_RESP_TIME cycles"
     )
 
-
     // Master control properties
-    assert(psel && !active |=> active,
+    assert(
+      psel && !active |=> active,
       cf"${name}: asserting psel while idle leads to the access phase"
     )
-    assume((psel && !active) -> !penable,
+    assume(
+      (psel && !active) -> !penable,
       cf"${name}: penable has to be low during the setup phase"
     )
-    assume(active -> psel, 
+    assume(
+      active -> psel,
       cf"${name}: psel has to be asserted during the access phase"
     )
-    assume(active -> penable, 
+    assume(
+      active -> penable,
       cf"${name}: penable has to be asserted during the access phase"
     )
 
     // Master data stability properties
-    assume(active -> stable(paddr), 
+    assume(
+      active -> stable(paddr),
       cf"${name}: paddr should be stable during the setup and access phases"
     )
-    assume(active -> stable(pwrite), 
+    assume(
+      active -> stable(pwrite),
       cf"${name}: pwrite should be stable during the setup and access phases"
     )
-    assume(active -> stable(pstrb), 
+    assume(
+      active -> stable(pstrb),
       cf"${name}: pstrb should be stable during the setup and access phases"
     )
-    assume(active -> stable(pwdata), 
+    assume(
+      active -> stable(pwdata),
       cf"${name}: pwdata should be stable during the setup and access phases"
     )
   }
-
 
   def masterPortProperties(name: String): Unit = {
 
@@ -89,49 +121,60 @@ class ApbTargetPort(
     }
 
     // Target Assumptions
-    assume(rose(active) |MAX_RESP_TIME|=> pready, 
+    assume(
+      rose(active).within(MAX_RESP_TIME) |=> pready,
       cf"${name}: the target signals ready at least 4 cycles after"
     )
-    assume((psel && pslverr) -> pready, 
+    assume(
+      (psel && pslverr) -> pready,
       cf"${name}: the target signals an error at the end of the access phase"
     )
-    assume(pready -> (psel && penable),
+    assume(
+      pready -> (psel && penable),
       cf"${name}: pready is only asserted in the access phase"
     )
 
     // Liveness Check
-    assert(active |MAX_RESP_TIME|=> !active,
+    assert(
+      active.within(MAX_RESP_TIME) |=> !active,
       cf"${name}: an active transaction should be completed within 5 cycles"
     )
 
     // Master control properties
-    assert(psel && !active |=> active,
+    assert(
+      psel && !active |=> active,
       cf"${name}: asserting psel while idle leads to the access phase"
     )
-    assert((psel && !active) -> !penable,
+    assert(
+      (psel && !active) -> !penable,
       cf"${name}: penable has to be low during the setup phase"
     )
-    assert(active -> psel, 
+    assert(
+      active -> psel,
       cf"${name}: psel has to be asserted during the access phase"
     )
-    assert(active -> penable, 
+    assert(
+      active -> penable,
       cf"${name}: penable has to be asserted during the access phase"
     )
 
-
     // Master data stability properties
-    assert(active -> stable(paddr), 
+    assert(
+      active -> stable(paddr),
       cf"${name}: paddr should be stable during the setup and access phases"
     )
-    assert(active -> stable(pwrite), 
+    assert(
+      active -> stable(pwrite),
       cf"${name}: pwrite should be stable during the setup and access phases"
     )
-    assert(active -> stable(pstrb), 
+    assert(
+      active -> stable(pstrb),
       cf"${name}: pstrb should be stable during the setup and access phases"
     )
-    assert(active -> stable(pwdata), 
+    assert(
+      active -> stable(pwdata),
       cf"${name}: pwdata should be stable during the setup and access phases"
     )
   }
-  
+
 }

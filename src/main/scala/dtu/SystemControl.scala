@@ -6,7 +6,7 @@ import apb._
 
 class SystemControl extends Module {
 
-  val apbPort = IO(new ApbTargetPort(2, 32))
+  val apbPort = IO(ApbPort.targetPort(2, 32))
   val ctrlPort = IO(new Bundle {
     val lerosReset = Output(Bool())
     val lerosBootFromRam = Output(Bool())

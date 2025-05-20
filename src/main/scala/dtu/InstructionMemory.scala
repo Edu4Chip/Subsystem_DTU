@@ -4,7 +4,8 @@ import chisel3._
 import chisel3.util.log2Ceil
 
 import leros.InstrMemIO
-import apb.ApbTargetPort
+import apb.ApbPort
+import apb.ApbTarget
 
 import mem.MemoryFactory
 
@@ -33,9 +34,9 @@ class InstructionMemory(noBytes: Int) extends Module {
   val addrWidth = log2Ceil(noBytes)
 
   val instrPort = IO(new InstrMemIO(addrWidth))
-  val apbPort = IO(new ApbTargetPort(addrWidth, 32))
+  val apbPort = IO(ApbPort.targetPort(addrWidth, 32))
 
-  properties {
+  formalProperties {
     apbPort.targetPortProperties("InstructionMemory")
   }
 

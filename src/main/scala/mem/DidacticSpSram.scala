@@ -27,10 +27,12 @@ class DidacticSpSram(words: Int) extends Module with AbstractMemory {
     val mask = Input(UInt(4.W))
   })
 
-  val mem: DidacticSpSramBlackBox = Module(new DidacticSpSramBlackBox(words, 32))
+  val mem: DidacticSpSramBlackBox = Module(
+    new DidacticSpSramBlackBox(words, 32)
+  )
 
   mem.io.clk_i := clock
-  mem.io.rst_ni := !reset.asBool()
+  mem.io.rst_ni := !reset.asBool
 
   mem.io.req_i := io.req
   mem.io.we_i := io.write
@@ -57,12 +59,15 @@ class DidacticSpSram(words: Int) extends Module with AbstractMemory {
   }
 }
 
-
-class DidacticSpSramBlackBox(words: Int, dataWidth: Int) extends BlackBox(Map(
-  "INIT_FILE" -> "",
-  "DATA_WIDTH" -> s"$dataWidth",
-  "NUM_WORDS" -> s"$words"
-)) with HasBlackBoxPath {
+class DidacticSpSramBlackBox(words: Int, dataWidth: Int)
+    extends BlackBox(
+      Map(
+        "INIT_FILE" -> "",
+        "DATA_WIDTH" -> s"$dataWidth",
+        "NUM_WORDS" -> s"$words"
+      )
+    )
+    with HasBlackBoxPath {
 
   override val desiredName: String = "sp_sram"
 
@@ -74,13 +79,11 @@ class DidacticSpSramBlackBox(words: Int, dataWidth: Int) extends BlackBox(Map(
     val we_i = Input(Bool())
     val addr_i = Input(UInt(log2Ceil(words).W))
     val wdata_i = Input(UInt(dataWidth.W))
-    val be_i = Input(UInt(((dataWidth+7) / 8).W))
+    val be_i = Input(UInt(((dataWidth + 7) / 8).W))
     val rdata_o = Output(UInt(dataWidth.W))
 
     val ruser_o = Output(Bool())
     val wuser_i = Input(Bool())
   })
-
-
 
 }

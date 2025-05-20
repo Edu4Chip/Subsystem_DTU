@@ -1,18 +1,31 @@
 package basys3
 
+import circt.stage.ChiselStage
+
 import chisel3._
 import chisel3.util._
 import dtu.DtuSubsystem
 import dtu.DtuSubsystemConfig
-import dtu.DtuSerialDriver
-import io.PmodPins
-import io.UartPins
+import io._
 import chisel3.experimental.Analog
+import mem.MemoryFactory
+
+object DtuSubsystemBasys3 extends App {
+  MemoryFactory.use(mem.ChiselSyncMemory.create)
+  ChiselStage.emitSystemVerilogFile(
+    new DtuSubsystemBasys3(
+      DtuSubsystemConfig.default
+        .copy(romProgramPath = args.head)
+    ),
+    "--split-verilog" +: (args.tail),
+    Array()
+  )
+}
 
 class DtuSubsystemBasys3(conf: DtuSubsystemConfig) extends Module {
 
   val io = IO(new Bundle {
-    val pmod = Analog(4.W)
+    val pmod = Analog((conf.gpioPins - 4).W)
     val leds = Output(UInt(16.W))
     val uart = new UartPins
     val ponteEnable = Input(Bool())
@@ -26,66 +39,29 @@ class DtuSubsystemBasys3(conf: DtuSubsystemConfig) extends Module {
   dtu.io.apb.psel := 0.B
   dtu.io.apb.penable := 0.B
 
-  val pmodDriver = Module(new Tristate(4))
-  dtu.io.pmod(1).gpi := pmodDriver.io.busReadValue
-  pmodDriver.io.driveBus := ~dtu.io.pmod(1).oe
-  pmodDriver.io.busDriveValue := dtu.io.pmod(1).gpo
+  val pmodDriver = Module(new Tristate(conf.gpioPins - 4))
+  pmodDriver.io.busDriveValue := dtu.io.gpio.out
+  pmodDriver.io.driveBus := ~dtu.io.gpio.outputEnable
   pmodDriver.io.bus <> io.pmod
 
-  io.leds := Cat(dtu.io.pmod(1).gpo, io.uart.rx, dtu.io.pmod(0).gpo(2), io.uart.rx, dtu.io.pmod(0).gpo(0))
-
-  dtu.io.pmod(0).gpi := 0xf.U
+  io.leds := dtu.io.gpio.out(math.min(15, conf.gpioPins - 1), 4)
 
   when(io.ponteEnable) {
-    io.uart.tx := dtu.io.pmod(0).gpo(0)
-    dtu.io.pmod(0).gpi := io.uart.rx ## 0.B
+    io.uart.tx := dtu.io.gpio.out(0)
+    dtu.io.gpio.in := pmodDriver.io.busReadValue ## Cat(
+      1.B,
+      1.B,
+      io.uart.rx,
+      1.B
+    )
   } otherwise {
-    io.uart.tx := dtu.io.pmod(0).gpo(2)
-    dtu.io.pmod(0).gpi := io.uart.rx ## Fill(3, 0.B)
-  }
-
-}
-
-object DtuSubsystemBasys3 extends App {
-  (new stage.ChiselStage).emitSystemVerilog(
-    new DtuSubsystemBasys3(
-      DtuSubsystemConfig.default
-        .copy(romProgramPath = args.head)
-    ),
-    args.tail
-  )
-}
-
-object ProgramDtuSubsystemBasys3 extends App {
-
-  val port = new DtuSerialDriver("/dev/ttyUSB1", 921600)
-
-  port.resetLerosEnable()
-  port.selectBootRam()
-
-  Thread.sleep(100)
-
-  port.uploadProgram(args.headOption.getOrElse("leros-asm/didactic_rt.s"))
-
-  port.resetLerosDisable()
-
-  port.close()
-
-}
-
-object ReadCCRDtuSubsystemBasys3 extends App {
-
-  val port = new DtuSerialDriver("/dev/ttyUSB1", 921600)
-
-  try{
-    while(true) {
-    print("\r" + port.readCrossCoreReg(0))
-    Thread.sleep(100)
-    }
-  } catch {
-    case e: InterruptedException => println("\nInterrupted")
-  } finally {
-    port.close()
+    io.uart.tx := dtu.io.gpio.out(2)
+    dtu.io.gpio.in := pmodDriver.io.busReadValue ## Cat(
+      io.uart.rx,
+      1.B,
+      1.B,
+      1.B
+    )
   }
 
 }

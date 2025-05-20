@@ -33,6 +33,32 @@ Run tests:
 make test
 ```
 
+## FPGA Validation on Basys3
+
+Synthesize the design with the specified program in ROM.
+
+```shell
+make -C basys3 gen synth PROG=leros-asm/??.s
+```
+
+Upload the bitstream to the FPGA:
+
+```shell
+make -C basys3 prog
+```
+
+Upload a program to the instruction memory:
+
+```shell
+make -C basys3 upload PROG=leros-asm/??.s
+```
+
+## Hardening the Subsystem with OpenLane
+
+```shell
+make -C openlane gen harden
+```
+
 ## Subsystem Configuration
 
 The DTU subsystem is configured using `DtuSubsystemConfig`. An example configuarion is shown below:

@@ -8,10 +8,13 @@ class PonteSerialDriver(portDescriptor: String, baud: Int) {
   val port = SerialPort.getCommPort(portDescriptor)
 
   port.setComPortParameters(baud, 8, 1, 0)
-  port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 1000, 0)
+  port.setComPortTimeouts(
+    SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING,
+    1000,
+    0
+  )
 
-  if (port.openPort()) {
-  } else {
+  if (port.openPort()) {} else {
     throw new Exception(s"Failed to open port $portDescriptor")
   }
 
@@ -70,7 +73,7 @@ class PonteSerialDriver(portDescriptor: String, baud: Int) {
       val word = (x(3) << 24) | (x(2) << 16) | (x(1) << 8) | x(0)
       data += word
     }
-    data
+    data.toSeq
   } catch {
     case e: Exception =>
       port.closePort()

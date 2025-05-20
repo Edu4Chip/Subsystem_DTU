@@ -9,7 +9,7 @@ object ApbTargetBfm {
   case class Write(addr: BigInt, data: BigInt) extends Op
 }
 
-class ApbTargetBfm(apb: ApbTargetPort, clk: Clock) {
+class ApbTargetBfm(apb: ApbPort, clk: Clock) {
 
   import ApbTargetBfm._
 

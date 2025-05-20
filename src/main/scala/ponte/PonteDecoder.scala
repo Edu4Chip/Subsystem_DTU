@@ -3,7 +3,7 @@ package ponte
 import chisel3._
 import chisel3.util._
 
-import apb.ApbTargetPort
+import apb.ApbPort
 import leros.uart.UartIO
 
 import misc.FormalHelper._
@@ -18,10 +18,10 @@ class PonteDecoder extends Module {
   val io = IO(new Bundle {
     val in = Flipped(new UartIO)
     val out = new UartIO
-    val apb = Flipped(new ApbTargetPort(16, 32))
+    val apb = ApbPort.masterPort(16, 32)
   })
 
-  properties {
+  formalProperties {
     io.apb.masterPortProperties("PonteDecoder")
   }
 
@@ -126,7 +126,7 @@ class PonteDecoder extends Module {
   }
 
   // when the FSM is not performing a APB transactions
-  // a new Ponte transaction may be started, aborting 
+  // a new Ponte transaction may be started, aborting
   // the current one
   when(dec.io.valid && !dec.io.stall) {
     when(dec.io.startRead) {

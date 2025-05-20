@@ -4,7 +4,7 @@ This folder contains the necessary files to validate the DTU subsystem on the Ba
 
 ### Generate, Synthesize, and Program FPGA
 ```bash
-make gen synth prog
+make gen synth prog PROG=leros/asm/???.s
 ```
 
 ### Running a Program

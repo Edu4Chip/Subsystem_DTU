@@ -32,10 +32,10 @@ class Sky130Sram(words: Int) extends Module with AbstractMemory {
     val mask = Input(UInt(4.W))
   })
 
-
   val mem: Sky130SramBlackBox = Module(words match {
     case 256 => new Sky130Sram32x256
-    case _ => throw new Exception(s"Unsupported memory size $words for Sky130Sram")
+    case _ =>
+      throw new Exception(s"Unsupported memory size $words for Sky130Sram")
   })
 
   mem.io.clk0 := clock
@@ -79,12 +79,14 @@ class Sky130SramPort(addrWidth: Int) extends Bundle {
   val dout1 = Output(UInt(32.W))
 }
 
-abstract class Sky130SramBlackBox(name: String, addrWidth: Int) extends BlackBox with HasBlackBoxPath {
+abstract class Sky130SramBlackBox(name: String, addrWidth: Int)
+    extends BlackBox {
   val io: Sky130SramPort = IO(new Sky130SramPort(addrWidth))
-  addPath(s"sky130_sram_macros/$name/$name.v")
   override val desiredName: String = name
 }
 
-class Sky130Sram32x256 extends Sky130SramBlackBox(
-  "sky130_sram_1kbyte_1rw1r_32x256_8", 8
-)
+class Sky130Sram32x256
+    extends Sky130SramBlackBox(
+      "sky130_sram_1kbyte_1rw1r_32x256_8",
+      8
+    )

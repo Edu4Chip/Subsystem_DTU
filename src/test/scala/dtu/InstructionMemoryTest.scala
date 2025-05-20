@@ -1,13 +1,17 @@
 import chisel3._
 
 import chiseltest._
+import chiseltest.formal._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import dtu.InstructionMemory
 import misc.FormalHelper
 import apb.ApbBfm
 
-class InstructionMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
+class InstructionMemoryTest
+    extends AnyFlatSpec
+    with ChiselScalatestTester
+    with Formal {
   behavior of "InstructionMemory"
 
   def expectInstr(dut: InstructionMemory, addr: BigInt, instr: BigInt): Unit = {
@@ -17,6 +21,10 @@ class InstructionMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   FormalHelper.enableProperties()
+
+  it should "satisfy Apb properties" in {
+    verify(new dtu.InstructionMemory(64), Seq(BoundedCheck(10)))
+  }
 
   it should "accept Apb write transactions" in {
     test(new InstructionMemory(32 * 4))
