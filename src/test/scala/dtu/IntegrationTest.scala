@@ -44,7 +44,7 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
   val progs = new File("leros/asm/test")
     .listFiles()
     .filter(_.isFile)
-    .map(_.getName())
+    .map(_.toString())
 
   println(progs.mkString(", "))
   progs.foreach { prog =>

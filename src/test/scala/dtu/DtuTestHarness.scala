@@ -54,7 +54,7 @@ case class DtuTestHarnessBfm(dut: DtuTestHarness) extends DtuInterface {
   def send(addr: Int, data: Seq[Int]): Unit = {
     assert(addr >= 0 && addr < 0x1000)
     data.zipWithIndex.foreach { case (d, i) =>
-      apbBfm.write(addr + i * 4, d)
+      apbBfm.write(addr + i * 4, BigInt(d) & 0xFFFFFFFFL)
     }
   }
 
