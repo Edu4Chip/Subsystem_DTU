@@ -12,7 +12,7 @@ class SystemControl extends Module {
     val lerosBootFromRam = Output(Bool())
   })
 
-  val lerosResetReg = RegInit(0.B)
+  val lerosResetReg = RegInit(1.B)
   val lerosBootFromRamReg = RegInit(0.B)
   ctrlPort.lerosReset := lerosResetReg
   ctrlPort.lerosBootFromRam := lerosBootFromRamReg
