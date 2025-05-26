@@ -10,6 +10,7 @@ import chiseltest.formal._
 import misc.Helper.UIntRangeCheck
 import misc.MemoryMapHelper
 import misc.FormalHelper._
+import leros.shared.Constants.add
 
 class ApbMux(
     addrWidth: Int,
@@ -30,6 +31,9 @@ class ApbMux(
     t.psel := 0.B
   }
 
+  val errorTarget = Module(new ApbErrorTarget(addrWidth, dataWidth))
+  errorTarget.apbPort <> io.master
+
   formalProperties {
 
     io.master.targetPortProperties("ApbMux.master")
@@ -42,6 +46,11 @@ class ApbMux(
         "port psel should be equal to master psel when address is in ports range"
       )
     }
+
+    assert(
+      io.master.psel -> (io.targets.map(_.psel) :+ errorTarget.apbPort.psel).reduce(_ || _),
+      "At least one target must be selected when the master asserts psel"
+    )
   }
 
   io.targets.lazyZip(targetInfos).foreach { case (port, targetInfo) =>
@@ -51,6 +60,7 @@ class ApbMux(
     ) === targetInfo.fixedAddrPart.U
 
     when(selected) {
+      errorTarget.apbPort.psel := 0.B
       port.psel := 1.B
       io.master.pready := port.pready
       io.master.prdata := port.prdata

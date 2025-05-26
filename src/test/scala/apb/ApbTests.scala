@@ -17,7 +17,10 @@ class ApbTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
 
   FormalHelper.enableProperties()
 
-  "ApbMux" should "satisfy properties" in {
+
+  behavior of "ApbMux"
+
+  it should "satisfy properties" in {
     verify(
       new ApbMux(
         10,
@@ -26,11 +29,26 @@ class ApbTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
           ApbTarget("t0", 0x000, 8),
           ApbTarget("t1", 0x100, 8),
           ApbTarget("t2", 0x200, 8),
-          ApbTarget("t3", 0x300, 8)
+          // 0x300-> 0x3ff is unmapped
         )
       ),
       Seq(BoundedCheck(10))
     )
+  }
+
+  it should "respond with error for unmapped address" in {
+    test(new ApbMux(
+        10,
+        32,
+        Seq(
+          ApbTarget("t0", 0x000, 8),
+          ApbTarget("t1", 0x100, 8),
+          ApbTarget("t2", 0x200, 8),
+        )
+      )).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        val bfm = new ApbBfm(dut.clock, dut.io.master)
+        bfm.write(0x300, 0x12345678).expectError()
+      }
   }
 
   "ApbArbiter" should "satisfy properties" in {
