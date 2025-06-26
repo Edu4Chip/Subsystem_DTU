@@ -76,7 +76,7 @@ class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
   val gpio = Module(new peripherals.Gpio(conf.gpioPins - 4))
   val dmem = Module(new DataMemory(conf.dataMemorySize))
   val uart = Module(new peripherals.Uart(conf.frequency, conf.lerosBaudRate))
-  uart.uartPins.rx := lerosRx
+  uart.uartPins.rx := Mux(sysCtrl.ctrlPort.lerosUartLoopBack, uart.uartPins.tx, lerosRx)
 
   leros.imemIO <> instrMem.instrPort
   leros.imemIO <> rom.io
@@ -90,7 +90,7 @@ class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
   ApbMux(ApbArbiter(ponte.io.apb, io.apb))( // 12 bit address space
     instrMem.apbPort -> 0x000, // instruction memory at 0x000
     regBlock.apbPort -> 0x800, // cross-core registers at 0x800
-    sysCtrl.apbPort -> 0xc00 // system control registers at 0xC00
+    sysCtrl.apbPort -> 0xc00, // system control registers at 0xC00
   )
 
   // Interconnect visible to Leros
@@ -98,14 +98,14 @@ class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
     dmem.dmemPort -> 0x0000, // data memory at 0x0000
     regBlock.dmemPort -> 0x8000, // cross-core registers at 0x8000
     gpio.dmemPort -> 0x8100, // GPIO at 0x8100
-    uart.dmemPort -> 0x8110 // UART at 0x8110
+    uart.dmemPort -> 0x8110, // UART at 0x8110
   )
 
   io.gpio.out := gpio.gpioPort.out ## Cat(
     0.B,
     uart.uartPins.tx,
     0.B,
-    ponte.io.uart.tx
+    ponte.io.uart.tx,
   )
   io.gpio.outputEnable := gpio.gpioPort.outputEnable ## 0xa.U(4.W)
   gpio.gpioPort.in := io.gpio.in(conf.gpioPins - 1, 4)

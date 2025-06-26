@@ -54,3 +54,30 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 }
+
+class SelfTest extends AnyFlatSpec with ChiselScalatestTester {
+
+  behavior of "DTU Subsystem"
+
+  it should "pass self-test" in {
+    MemoryFactory.use(RegMemory.create)
+    val config = DtuSubsystemConfig.default
+      .copy(
+        romProgramPath = "leros-asm/didactic.s",
+        lerosBaudRate = 100000000
+      )
+
+    test(new DtuTestHarness(config)) { dut =>
+      val bfm = new DtuTestHarnessBfm(dut)
+
+      bfm.resetLerosEnable()
+      bfm.selectBootRam()
+      bfm.enableUartLoopBack()
+      bfm.uploadProgram("leros-asm/didactic.s")
+      bfm.resetLerosDisable()
+
+      dut.clock.step(100)
+    }
+  }
+
+}

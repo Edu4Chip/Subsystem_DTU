@@ -68,6 +68,21 @@ trait DtuInterface {
     setSysCtrlBit(1)
   }
 
+  /** Enable UART loopback mode. In this mode, the UART transmit pin is
+    * connected to the receive pin, allowing for testing without external
+    * connections.
+    */
+  def enableUartLoopBack() = {
+    setSysCtrlBit(2)
+  }
+
+  /** Disable UART loopback mode. In this mode, the UART transmit pin is not
+    * connected to the receive pin, allowing for normal operation.
+    */
+  def disableUartLoopBack() = {
+    clearSysCtrlBit(2)
+  }
+
   /** Upload an assembly program to the programmable instruction memory. The
     * program is assembled and loaded into the instruction memory.
     * @param path

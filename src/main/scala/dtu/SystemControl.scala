@@ -10,14 +10,21 @@ class SystemControl extends Module {
   val ctrlPort = IO(new Bundle {
     val lerosReset = Output(Bool())
     val lerosBootFromRam = Output(Bool())
+    val lerosUartLoopBack = Output(Bool())
   })
 
-  val lerosResetReg = RegInit(1.B)
+  val lerosResetReg = RegInit(0.B)
   val lerosBootFromRamReg = RegInit(0.B)
+  val lerosUartLoopBackReg = RegInit(0.B)
   ctrlPort.lerosReset := lerosResetReg
   ctrlPort.lerosBootFromRam := lerosBootFromRamReg
+  ctrlPort.lerosUartLoopBack := lerosUartLoopBackReg
 
-  apbPort.prdata := Cat(lerosBootFromRamReg, lerosResetReg)
+  apbPort.prdata := Cat(
+    lerosUartLoopBackReg,
+    lerosBootFromRamReg,
+    lerosResetReg
+  )
   apbPort.pready := 0.B
   apbPort.pslverr := 0.B
 
@@ -28,6 +35,7 @@ class SystemControl extends Module {
     when(apbPort.pwrite) {
       lerosResetReg := apbPort.pwdata(0)
       lerosBootFromRamReg := apbPort.pwdata(1)
+      lerosUartLoopBackReg := apbPort.pwdata(2)
     }
 
   }
