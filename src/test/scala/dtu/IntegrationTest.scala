@@ -67,7 +67,7 @@ class SelfTest extends AnyFlatSpec with ChiselScalatestTester {
         lerosBaudRate = 100000000
       )
 
-    test(new DtuTestHarness(config)) { dut =>
+    test(new DtuTestHarness(config)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
 
       bfm.resetLerosEnable()
