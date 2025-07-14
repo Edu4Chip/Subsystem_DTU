@@ -11,6 +11,8 @@ import mem.RegMemory
 import dtu.DtuSubsystemConfig
 import misc.FormalHelper
 import java.io.File
+import os.group.set
+import org.scalatest.matchers.should.Matchers
 
 class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
 
@@ -55,7 +57,71 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 }
 
-class SelfTest extends AnyFlatSpec with ChiselScalatestTester {
+class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
+
+  behavior of "DTU Subsystem"
+
+  it should "pass adder test" in {
+    MemoryFactory.use(RegMemory.create)
+    val config = DtuSubsystemConfig.default
+      .copy(
+        romProgramPath = "leros-asm/didactic.s",
+        lerosBaudRate = 100000000
+      )
+
+    test(new DtuTestHarness(config)).withAnnotations(Seq(
+      WriteFstAnnotation,
+      VerilatorBackendAnnotation,
+    )) { dut =>
+      val bfm = new DtuTestHarnessBfm(dut)
+
+      def ready(): Boolean = {
+        bfm.readCrossCoreReg(0) == 1
+      }
+
+      def setValid(b: Boolean): Unit = {
+        bfm.writeCrossCoreReg(0, if (b) 1 else 0)
+      }
+
+      def loadValues(a: Int, b: Int): Unit = {
+        bfm.writeCrossCoreReg(1, a)
+        bfm.writeCrossCoreReg(2, b)
+      }
+
+      def getResult(): Int = {
+        bfm.readCrossCoreReg(3)
+      }
+
+      def add(a: Int, b: Int): Int = {
+        loadValues(a, b)
+        setValid(true)
+        dut.clock.stepUntil(ready())
+        dut.clock.stepUntil(!ready())
+        setValid(false)
+        dut.clock.stepUntil(ready())
+        getResult()
+      }
+
+      bfm.resetLerosEnable()
+      bfm.selectBootRam()
+      bfm.enableUartLoopBack()
+      bfm.uploadProgram("leros-asm/didactic_adder.s")
+      bfm.resetLerosDisable()
+
+      add(1, 2) shouldEqual 3
+
+      add(10, 20) shouldEqual 30
+
+      add(100, 200) shouldEqual 300
+
+      add(0xFFFFFFFF, 0x0001) shouldEqual 0x0000 // Overflow case
+    }
+  }
+
+}
+
+
+class SelfTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
 
   behavior of "DTU Subsystem"
 
@@ -67,16 +133,38 @@ class SelfTest extends AnyFlatSpec with ChiselScalatestTester {
         lerosBaudRate = 100000000
       )
 
-    test(new DtuTestHarness(config)) { dut =>
+    test(new DtuTestHarness(config)).withAnnotations(Seq(
+      WriteFstAnnotation,
+      VerilatorBackendAnnotation,
+    )) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
+
+
+      def startSelfTest(seed: Int) = {
+        bfm.writeCrossCoreReg(0, seed)
+      }
+
+      def done: Boolean = {
+        bfm.readCrossCoreReg(0) == 1
+      }
+
+      def result: Int = {
+        bfm.readCrossCoreReg(1)
+      }
+
+      def selftest(seed: Int): Int = {
+        startSelfTest(seed)
+        dut.clock.stepUntil(done)
+        result
+      }
 
       bfm.resetLerosEnable()
       bfm.selectBootRam()
       bfm.enableUartLoopBack()
-      bfm.uploadProgram("leros-asm/didactic.s")
+      bfm.uploadProgram("leros-asm/selftest.s")
       bfm.resetLerosDisable()
 
-      dut.clock.step(100)
+      selftest(0xDEADBEEF) shouldEqual 0xEF
     }
   }
 

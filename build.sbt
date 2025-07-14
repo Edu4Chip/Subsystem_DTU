@@ -4,6 +4,7 @@ scalacOptions ++= Seq(
   "-feature",
   "-language:reflectiveCalls",
 )
+fork := true
 
 Compile / unmanagedSourceDirectories += baseDirectory.value / "hello-morse/src"
 Compile / unmanagedSourceDirectories += baseDirectory.value / "leros/src"
