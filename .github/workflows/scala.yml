@@ -35,6 +35,8 @@ jobs:
       uses: pavpanchekha/setup-z3@v0.3.0
     - name: Setup Verilator
       uses: veryl-lang/setup-verilator@v1
+      with:
+        version: 5.032
     - name: build simulator
       run: make init
     - name: Run tests
