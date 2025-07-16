@@ -13,6 +13,9 @@ import misc.FormalHelper
 import java.io.File
 import os.group.set
 import org.scalatest.matchers.should.Matchers
+import mem.DidacticSpSram
+import circt.stage.ChiselStage
+import mem.ChiselSyncMemory
 
 class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
 
@@ -27,7 +30,7 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
       lerosBaudRate = 100000000
     )
 
-  def testProgram(prog: String)(dut: DtuTestHarness): Unit = {
+  def testProgram(dut: DtuTestHarness)(prog: String): Unit = {
     val bfm = new DtuTestHarnessBfm(dut)
 
     bfm.resetLerosEnable()
@@ -40,7 +43,7 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
     }
 
     val res = dut.io.dbg.accu
-      .expect(1.U, "Accu shall be one at the end of a test case.\n")
+      .expect(1.U, s"[$prog] Accu shall be one at the end of a test case.\n")
   }
 
   val progs = new File("leros/asm/test")
@@ -48,11 +51,13 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
     .filter(_.isFile)
     .map(_.toString())
 
-  println(progs.mkString(", "))
-  progs.foreach { prog =>
-    it should s"upload and execute $prog" in {
-      println(s"Testing program: $prog")
-      test(new DtuTestHarness(config))(testProgram(prog))
+  it should "correctly execute all Leros test programs" in {
+    test(new DtuTestHarness(config)).withAnnotations(
+      Seq(
+        VerilatorBackendAnnotation
+      )
+    ) { dut =>
+      progs.foreach(testProgram(dut))
     }
   }
 }
@@ -69,10 +74,12 @@ class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
         lerosBaudRate = 100000000
       )
 
-    test(new DtuTestHarness(config)).withAnnotations(Seq(
-      WriteFstAnnotation,
-      VerilatorBackendAnnotation,
-    )) { dut =>
+    test(new DtuTestHarness(config)).withAnnotations(
+      Seq(
+        WriteFstAnnotation,
+        VerilatorBackendAnnotation
+      )
+    ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
 
       def ready(): Boolean = {
@@ -114,31 +121,31 @@ class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
 
       add(100, 200) shouldEqual 300
 
-      add(0xFFFFFFFF, 0x0001) shouldEqual 0x0000 // Overflow case
+      add(0xffffffff, 0x0001) shouldEqual 0x0000 // Overflow case
     }
   }
 
 }
-
 
 class SelfTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
 
   behavior of "DTU Subsystem"
 
   it should "pass self-test" in {
-    MemoryFactory.use(RegMemory.create)
+    MemoryFactory.use(ChiselSyncMemory.create)
     val config = DtuSubsystemConfig.default
       .copy(
         romProgramPath = "leros-asm/didactic.s",
         lerosBaudRate = 100000000
       )
 
-    test(new DtuTestHarness(config)).withAnnotations(Seq(
-      WriteFstAnnotation,
-      VerilatorBackendAnnotation,
-    )) { dut =>
+    test(new DtuTestHarness(config)).withAnnotations(
+      Seq(
+        WriteFstAnnotation,
+        VerilatorBackendAnnotation
+      )
+    ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
-
 
       def startSelfTest(seed: Int) = {
         bfm.writeCrossCoreReg(0, seed)
@@ -164,7 +171,7 @@ class SelfTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
       bfm.uploadProgram("leros-asm/selftest.s")
       bfm.resetLerosDisable()
 
-      selftest(0xDEADBEEF) shouldEqual 0xEF
+      selftest(0xdeadbeef) shouldEqual 0xef
     }
   }
 
