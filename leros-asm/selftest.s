@@ -59,3 +59,6 @@ wait_uart:
         stind 1 // write final result to CCR[1]
         loadi 1 
         stind 0 // signal ready on CCR[0]
+
+end:
+        br end
