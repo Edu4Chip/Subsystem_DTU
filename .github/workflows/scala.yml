@@ -34,9 +34,7 @@ jobs:
     - name: Setup z3
       uses: pavpanchekha/setup-z3@v0.3.0
     - name: Setup Verilator
-      uses: veryl-lang/setup-verilator@v1
-      with:
-        version: 5.024
+      run: sudo apt-get install -y verilator
     - name: build simulator
       run: make init
     - name: Run tests
