@@ -54,10 +54,7 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
 
   it should "correctly execute all Leros test programs" in {
     test(new DtuTestHarness(config)).withAnnotations(
-      Seq(
-        VerilatorBackendAnnotation,
-        VerilatorCFlags(Seq("-Wno-error=type-limits"))
-      )
+      Seq()
     ) { dut =>
       progs.foreach(testProgram(dut))
     }
@@ -77,11 +74,7 @@ class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
       )
 
     test(new DtuTestHarness(config)).withAnnotations(
-      Seq(
-        WriteFstAnnotation,
-        VerilatorBackendAnnotation,
-        VerilatorCFlags(Seq("-Wno-error=type-limits"))
-      )
+      Seq()
     ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
 
@@ -143,11 +136,7 @@ class SelfTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
       )
 
     test(new DtuTestHarness(config)).withAnnotations(
-      Seq(
-        WriteFstAnnotation,
-        VerilatorBackendAnnotation,
-        VerilatorCFlags(Seq("-Wno-error=type-limits"))
-      )
+      Seq()
     ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
 
