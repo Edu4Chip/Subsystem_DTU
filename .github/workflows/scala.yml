@@ -53,7 +53,7 @@ jobs:
         mkdir -p ~/.cache/verilator
         git clone https://github.com/verilator/verilator ~/.cache/verilator/src
         cd ~/.cache/verilator/src
-        git checkout stable
+        git checkout v5.036
         autoconf
         ./configure --prefix=$HOME/.cache/verilator/install
         make -j$(nproc)
