@@ -33,10 +33,38 @@ jobs:
       uses: sbt/setup-sbt@v1
     - name: Setup z3
       uses: pavpanchekha/setup-z3@v0.3.0
-    - name: Setup Verilator
-      uses: veryl-lang/setup-verilator@v1
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          git make autoconf g++ flex bison \
+          libfl2 libfl-dev zlib1g zlib1g-dev
+
+    - name: Cache Verilator build
+      id: cache-verilator
+      uses: actions/cache@v3
       with:
-        version: 5.032
+        path: ~/.cache/verilator
+        key: verilator-stable-v1
+
+    - name: Install Verilator
+      if: steps.cache-verilator.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p ~/.cache/verilator
+        git clone https://github.com/verilator/verilator ~/.cache/verilator/src
+        cd ~/.cache/verilator/src
+        git checkout stable
+        autoconf
+        ./configure --prefix=$HOME/.cache/verilator/install
+        make -j$(nproc)
+        make install
+
+    - name: Add Verilator to PATH
+      run: echo "$HOME/.cache/verilator/install/bin" >> $GITHUB_PATH
+
+    - name: Verify Verilator version
+      run: verilator --version
+
     - name: build simulator
       run: make init
     - name: Run tests
