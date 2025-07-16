@@ -16,6 +16,7 @@ import org.scalatest.matchers.should.Matchers
 import mem.DidacticSpSram
 import circt.stage.ChiselStage
 import mem.ChiselSyncMemory
+import chiseltest.simulator.VerilatorCFlags
 
 class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
 
@@ -54,7 +55,8 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "correctly execute all Leros test programs" in {
     test(new DtuTestHarness(config)).withAnnotations(
       Seq(
-        VerilatorBackendAnnotation
+        VerilatorBackendAnnotation,
+        VerilatorCFlags(Seq("-Wno-error=type-limits"))
       )
     ) { dut =>
       progs.foreach(testProgram(dut))
@@ -77,7 +79,8 @@ class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
     test(new DtuTestHarness(config)).withAnnotations(
       Seq(
         WriteFstAnnotation,
-        VerilatorBackendAnnotation
+        VerilatorBackendAnnotation,
+        VerilatorCFlags(Seq("-Wno-error=type-limits"))
       )
     ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
@@ -142,7 +145,8 @@ class SelfTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
     test(new DtuTestHarness(config)).withAnnotations(
       Seq(
         WriteFstAnnotation,
-        VerilatorBackendAnnotation
+        VerilatorBackendAnnotation,
+        VerilatorCFlags(Seq("-Wno-error=type-limits"))
       )
     ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
