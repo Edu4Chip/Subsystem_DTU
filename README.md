@@ -59,6 +59,12 @@ make -C basys3 upload PROG=leros-asm/??.s
 make -C openlane gen harden
 ```
 
+## Hardening the Subsystem with LibreLane
+
+```shell
+make -C openlane gen librelane
+```
+
 ## Subsystem Configuration
 
 The DTU subsystem is configured using `DtuSubsystemConfig`. An example configuarion is shown below:

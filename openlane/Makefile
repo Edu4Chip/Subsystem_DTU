@@ -10,6 +10,9 @@ harden-docker:
 harden:
 	cd .. && python3 -m openlane --run-tag dtu openlane/config.yaml
 
+librelane:
+	cd .. && librelane openlane/config.yaml
+
 clean:
 	rm -rf $(GEN_DIR)
 	rm -rf runs
