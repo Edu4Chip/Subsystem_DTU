@@ -10,6 +10,9 @@ DIE_AREA: [0, 0, 1200, 700]
 
 FP_PDN_MULTILAYER: true # old DESIGN_IS_CORE
 
+# for OpenRAM macros
+MAGIC_CAPTURE_ERRORS: false
+# ERROR_ON_KLAYOUT_DRC: false # did not help
 
 # Pin Order
 #FP_PIN_ORDER_CFG: dir::pin_order.cfg

@@ -13,6 +13,9 @@ harden:
 librelane:
 	cd .. && librelane openlane/config.yaml
 
+view:
+	cd .. && librelane --last-run --flow openinklayout openlane/config.yaml
+
 clean:
 	rm -rf $(GEN_DIR)
 	rm -rf runs
