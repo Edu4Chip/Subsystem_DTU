@@ -78,9 +78,9 @@ new DtuSubsystem(
     lerosSize = 32, // 32-bit accumulator
     lerosMemAddrWidth = 16, // 16-bit address space
     crossCoreRegisters = 4,
-    frequency = 100000000, // 1MHz
-    lerosBaudRate = 115200,
-    ponteBaudRate = 921600,
+    frequency = 8000000, // 8MHz
+    lerosBaudRate = 9600,
+    ponteBaudRate = 9600,
     apbAddrWidth = 12,
     apbDataWidth = 32
   )
@@ -89,19 +89,19 @@ new DtuSubsystem(
 
 ## Pin Table
 
-| Name              | Direction           | Function                   |
-| ------------------| --------------------| -------------------------- |
-| `clock`           | input               | clock                      |
-| `reset`           | input               | reset signal (active high) |
-| `p<signal>`       | input/output        | APB interface              |
-| `irq`             | output              | unused                     |
-| `irqEn`           | input               | unused                     |
-| `ssCtrl`          | input               | unused                     |
-| `pmod[0][0]`      | output              | Tx for Uart to Apb bridge  |
-| `pmod[0][1]`      | input               | Rx for Uart to Apb bridge  |
-| `pmod[0][2]`      | output              | Tx for Leros Uart          |
-| `pmod[0][3]`      | input               | Rx for Leros Uart          |
-| `pmod[1]`         | input/output        | Leros GPIO                 |
+| Name               | Direction           | Function                   |
+| ------------------ | ------------------- | -------------------------- |
+| `clock`            | input               | clock                      |
+| `reset`            | input               | reset signal (active high) |
+| `io_apb_p<signal>` | input/output        | APB interface              |
+| `io_irq`           | output              | unused                     |
+| `io_irqEn`         | input               | unused                     |
+| `io_ssCtrl`        | input               | unused                     |
+| `io_gpio[0]`       | output              | Tx for Uart to Apb bridge  |
+| `io_gpio[1]`       | input               | Rx for Uart to Apb bridge  |
+| `io_gpio[2]`       | output              | Tx for Leros Uart          |
+| `io_gpio[3]`       | input               | Rx for Leros Uart          |
+| `io_gpio[4-15]`    | input/output        | Leros GPIO                 |
 
 ## Memory Map
 
