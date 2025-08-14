@@ -3,9 +3,9 @@ package mem
 import chisel3._
 import chisel3.util._
 
-object DidacticSpSram {
+object DidacticSram {
   def create(words: Int): AbstractMemory = {
-    val m = Module(new DidacticSpSram(words))
+    val m = Module(new DidacticSram(words))
     m.io.wordAddr := DontCare
     m.io.write := DontCare
     m.io.req := 0.B
@@ -15,7 +15,7 @@ object DidacticSpSram {
   }
 }
 
-class DidacticSpSram(words: Int) extends Module with AbstractMemory {
+class DidacticSram(words: Int) extends Module with AbstractMemory {
   val addrWidth = log2Ceil(words)
 
   val io = IO(new Bundle {
@@ -27,15 +27,14 @@ class DidacticSpSram(words: Int) extends Module with AbstractMemory {
     val mask = Input(UInt(4.W))
   })
 
-  val mem: DidacticSpSramBlackBox = Module(
-    new DidacticSpSramBlackBox(words, 32)
+  val mem: DidacticSramBlackBox = Module(
+    new DidacticSramBlackBox(words, 32)
   )
 
   mem.io.clk_i := clock
   mem.io.rst_ni := !reset.asBool
 
   mem.io.req_i := io.req
-  mem.io.rready_i := 1.B
   mem.io.we_i := io.write
   mem.io.addr_i := io.wordAddr
   mem.io.wdata_i := io.wrData
@@ -59,7 +58,7 @@ class DidacticSpSram(words: Int) extends Module with AbstractMemory {
   }
 }
 
-class DidacticSpSramBlackBox(words: Int, dataWidth: Int)
+class DidacticSramBlackBox(words: Int, dataWidth: Int)
     extends BlackBox(
       Map(
         "INIT_FILE" -> "",
@@ -69,7 +68,7 @@ class DidacticSpSramBlackBox(words: Int, dataWidth: Int)
     )
     with HasBlackBoxPath {
 
-  override val desiredName: String = "sp_sram"
+  override val desiredName: String = "sram"
 
   val io = IO(new Bundle {
     val clk_i = Input(Clock())
@@ -77,15 +76,10 @@ class DidacticSpSramBlackBox(words: Int, dataWidth: Int)
 
     val req_i = Input(Bool())
     val we_i = Input(Bool())
-    val rready_i = Input(Bool())
     val addr_i = Input(UInt(log2Ceil(words).W))
     val wdata_i = Input(UInt(dataWidth.W))
     val be_i = Input(UInt(((dataWidth + 7) / 8).W))
     val rdata_o = Output(UInt(dataWidth.W))
-    val rvalid_o = Output(Bool())
-    val rvalidpar_o = Output(Bool())
-    val gnt_o = Output(Bool())
-    val gntpar_o = Output(Bool())
   })
 
 }

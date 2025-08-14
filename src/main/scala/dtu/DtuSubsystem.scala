@@ -22,7 +22,7 @@ object DtuSubsystem extends App {
   MemoryFactory.use(args.head match {
     case "sky130Sram"   => mem.Sky130Sram.create
     case "chiselSram"   => mem.ChiselSyncMemory.create
-    case "didacticSram" => mem.DidacticSpSram.create
+    case "didacticSram" => mem.DidacticSram.create
     case "registerRam"  => mem.RegMemory.create
     case _              => throw new Exception("Unknown memory type")
   })
@@ -33,7 +33,10 @@ object DtuSubsystem extends App {
         .copy(
           romProgramPath = args(1),
           instructionMemorySize = 1 << 10,
-          dataMemorySize = 1 << 10
+          dataMemorySize = 1 << 9,
+          frequency = 8_000_000,
+          lerosBaudRate = 9600,
+          ponteBaudRate = 9600,
         )
     ).printMemoryMap(),
     args.drop(2),
@@ -50,6 +53,18 @@ object IbexCode extends App {
     case (Array(a), i) =>
       val pointer = 0x01052000 + i * 4
       println(f"*(volatile unsigned int*)(0x$pointer%08x) = 0x$a%04x;")
+  }
+}
+
+object GdbLoader extends App {
+  val code = Assembler.assemble("leros-asm/selftest.s")
+  code.grouped(2).zipWithIndex.foreach {
+    case (Array(a, b), i) =>
+      val pointer = 0x01052000 + i * 4
+      println(f"monitor mww 0x$pointer%08x 0x$b%04x$a%04x")
+    case (Array(a), i) =>
+      val pointer = 0x01052000 + i * 4
+      println(f"monitor mww 0x$pointer%08x 0x$a%04x")
   }
 }
 
