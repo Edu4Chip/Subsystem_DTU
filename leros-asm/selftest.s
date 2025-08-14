@@ -6,6 +6,8 @@
         ldaddr  r1
 
 wait_seed:
+        stind   0           // reset ready signal
+        stind   1           // reset result
         ldind   0           // Load CCR[0]
         brz     wait_seed   // If 0, loop
 

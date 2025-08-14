@@ -182,3 +182,49 @@ object DtuSubsystemConfig {
     gpioPins = 16
   )
 }
+
+
+object DtuSelfTest extends App {
+
+
+    val com = new DtuSerialDriver("/dev/ttyUSB1", 9600)
+
+    com.resetLerosEnable()
+
+    com.uploadProgram("leros-asm/selftest.s")
+
+    com.writeCrossCoreReg(0, 0)
+    com.selectBootRam()
+    com.enableUartLoopBack()
+
+    println(com.readCrossCoreReg(0).toHexString)
+    println(com.readCrossCoreReg(1).toHexString)
+
+    com.resetLerosDisable()
+
+    com.writeCrossCoreReg(0, 0xab)
+
+    while (com.readCrossCoreReg(0) != 1) {
+      print(".")
+      Thread.sleep(100)
+    }
+
+    println(s"Result: ${com.readCrossCoreReg(1).toHexString}")
+
+    com.close()
+
+  }
+
+object DtuSelectRom extends App {
+
+  val com = new DtuSerialDriver("/dev/ttyUSB1", 9600)
+
+  com.resetLerosEnable()
+  com.selectBootRom()
+  com.disableUartLoopBack()
+  com.writeCrossCoreReg(0, 8_000_000 / 4)
+  com.resetLerosDisable()
+
+  com.close()
+
+}
