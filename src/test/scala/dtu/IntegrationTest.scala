@@ -13,7 +13,7 @@ import misc.FormalHelper
 import java.io.File
 import os.group.set
 import org.scalatest.matchers.should.Matchers
-import mem.DidacticSpSram
+import mem.DidacticSram
 import circt.stage.ChiselStage
 import mem.ChiselSyncMemory
 import chiseltest.simulator.VerilatorCFlags
