@@ -33,7 +33,7 @@ object DtuSubsystem extends App {
         .copy(
           romProgramPath = args(1),
           instructionMemorySize = 1 << 10,
-          dataMemorySize = 1 << 9,
+          dataMemorySize = 1 << 10,
           frequency = 8_000_000,
           lerosBaudRate = 9600,
           ponteBaudRate = 9600,
@@ -152,7 +152,7 @@ object DtuSubsystemConfig {
     instructionMemorySize = 1 << 11, // 2kB
 
     // Size of the data memory in bytes
-    dataMemorySize = 1 << 8, // 512 Bytes TODO: this is ignored, where does the configuration come from?
+    dataMemorySize = 1 << 8, // 512 Bytes but this is overwritten
 
     // Width of the Leros datapath
     lerosSize = 32, // 32-bit accumulator

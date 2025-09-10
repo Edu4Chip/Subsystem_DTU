@@ -15,13 +15,11 @@ import mem.MemoryFactory
   */
 class DataMemory(noBytes: Int) extends Module {
 
-//  val addrWidth = log2Ceil(noBytes)
-  val addrWidth = log2Ceil(1024) // TODO: this is hardcoded, where does the configuration come from?
+  val addrWidth = log2Ceil(noBytes)
 
   val dmemPort = IO(new DataMemIO(addrWidth - 2))
 
-//  val mem = MemoryFactory.create(noBytes / 4)
-  val mem = MemoryFactory.create(1024 / 4)
+  val mem = MemoryFactory.create(noBytes / 4)
 
   dmemPort.rdData := mem.read(dmemPort.rdAddr)
 
