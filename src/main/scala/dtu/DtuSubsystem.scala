@@ -152,7 +152,7 @@ object DtuSubsystemConfig {
     instructionMemorySize = 1 << 11, // 2kB
 
     // Size of the data memory in bytes
-    dataMemorySize = 1 << 8, // 256 Bytes
+    dataMemorySize = 1 << 8, // 512 Bytes TODO: this is ignored, where does the configuration come from?
 
     // Width of the Leros datapath
     lerosSize = 32, // 32-bit accumulator
