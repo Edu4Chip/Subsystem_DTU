@@ -9,6 +9,9 @@ init:
 generate:
 	sbt "runMain dtu.DtuSubsystem didacticSram $(PROG) --target-dir $(BUILD_DIR)"
 
+caravel:
+	sbt "runMain caravel.DtuSubsystemCaravel $(PROG) --target-dir $(BUILD_DIR)"
+
 clean:
 	rm -rf $(BUILD_DIR)
 	$(MAKE) -C openlane clean
