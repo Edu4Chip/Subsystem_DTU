@@ -9,13 +9,11 @@ init:
 generate:
 	sbt "runMain dtu.DtuSubsystem didacticSram $(PROG) --target-dir $(BUILD_DIR)"
 
-<<<<<<< Updated upstream
 caravel:
 	sbt "runMain caravel.DtuSubsystemCaravel $(PROG) --target-dir $(BUILD_DIR)"
-=======
+
 generate-caravel:
 	sbt "runMain caravel.LerosCaravel registerRam $(PROG) --target-dir $(BUILD_DIR)/caravel"
->>>>>>> Stashed changes
 
 clean:
 	rm -rf $(BUILD_DIR)
