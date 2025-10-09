@@ -123,7 +123,7 @@ class ApbPort(
     // Target Assumptions
     assume(
       rose(active).within(MAX_RESP_TIME) |=> pready,
-      cf"${name}: the target signals ready at least 4 cycles after"
+      cf"${name}: the target signals ready at least ${MAX_RESP_TIME} cycles after"
     )
     assume(
       (psel && pslverr) -> pready,
@@ -137,7 +137,7 @@ class ApbPort(
     // Liveness Check
     assert(
       active.within(MAX_RESP_TIME) |=> !active,
-      cf"${name}: an active transaction should be completed within 5 cycles"
+      cf"${name}: an active transaction should be completed within ${MAX_RESP_TIME} cycles"
     )
 
     // Master control properties

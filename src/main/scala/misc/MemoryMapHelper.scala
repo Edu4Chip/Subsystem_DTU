@@ -26,7 +26,7 @@ object MemoryMapHelper {
       range: Range,
       memAddrWidth: Int
   ): Boolean = {
-    range.end <= (1 << memAddrWidth)
+    range.end <= (BigInt(1) << memAddrWidth)
   }
 
 }
