@@ -32,16 +32,16 @@ package wishbone {
 
     def targetPortProperties(name: String): Unit = {
 
-      val active = RegInit(0.B) // tracks ongoing transaction
-      when(active && ack) {
-        active := 0.B
+      val wbTxActive = RegInit(0.B) // tracks ongoing transaction
+      when(wbTxActive && ack) {
+        wbTxActive := 0.B
       }.elsewhen(cyc && stb) {
-        active := 1.B
+        wbTxActive := 1.B
       }
 
       // Target Properties
       assert(
-        rose(active).within(MAX_RESP_TIME) |=> ack,
+        rose(wbTxActive).within(MAX_RESP_TIME) |=> ack,
         cf"${name}: the target signals ack at least $MAX_RESP_TIME cycles after the beginning of a transaction"
       )
 
@@ -52,23 +52,23 @@ package wishbone {
 
       // Livemess check
       assert(
-        active.within(MAX_RESP_TIME) |=> !active,
+        wbTxActive.within(MAX_RESP_TIME) |=> !wbTxActive,
         cf"${name}: an active transaction should be completed within $MAX_RESP_TIME cycles"
       )
 
 
       // Master control properties
       assert(
-        stb && !active |=> active,
+        stb && !wbTxActive |=> wbTxActive,
         cf"${name}: asserting stb while idle leads to the access phase"
       )
 
       assume(
-        active -> cyc,
+        wbTxActive -> cyc,
         cf"${name}: cyc is asserted during an active transaction"
       )
       assume(
-        active -> stb,
+        wbTxActive -> stb,
         cf"${name}: stb is asserted during an active transaction"
       )
       assume(
@@ -81,19 +81,19 @@ package wishbone {
       )
 
       assume(
-        active -> stable(we),
+        wbTxActive -> stable(we),
         cf"${name}: we is stable during an active transaction"
       )
       assume(
-        active -> stable(sel),
+        wbTxActive -> stable(sel),
         cf"${name}: sel is stable during an active transaction"
       )
       assume(
-        active -> stable(adr),
+        wbTxActive -> stable(adr),
         cf"${name}: adr is stable during an active transaction"
       )
       assume(
-        active -> stable(dat_i),
+        wbTxActive -> stable(dat_i),
         cf"${name}: dat_i is stable during an active transaction"
       )
 

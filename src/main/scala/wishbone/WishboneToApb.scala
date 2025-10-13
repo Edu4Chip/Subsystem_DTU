@@ -10,8 +10,6 @@ import apb.ApbPort
 
 class WishboneToApb(addrWidth: Int) extends Module {
 
-  println(s"Instantiating Wishbone to APB bridge with address width $addrWidth")
-
   val io = IO(new Bundle {
     val wb = wishbone.WishbonePort.targetPort(addrWidth)
     val apb = ApbPort.masterPort(addrWidth, 32)
