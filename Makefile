@@ -2,18 +2,16 @@
 
 PROG ?= leros-asm/didactic_rt.s
 BUILD_DIR ?= generated
+MEM ?= RtlSyncMemory
 
 init:
 	git submodule update --init --recursive
 
 generate:
-	sbt "runMain dtu.DtuSubsystem didacticSram $(PROG) --target-dir $(BUILD_DIR)"
-
-caravel:
-	sbt "runMain caravel.DtuSubsystemCaravel $(PROG) --target-dir $(BUILD_DIR)"
+	sbt "runMain dtu.DtuSubsystem DidacticSram $(PROG) --target-dir $(BUILD_DIR)"
 
 generate-caravel:
-	sbt "runMain caravel.LerosCaravel registerRam $(PROG) --target-dir $(BUILD_DIR)/caravel"
+	sbt "runMain caravel.LerosCaravel $(MEM) $(PROG) --target-dir $(BUILD_DIR)/caravel"
 
 clean:
 	rm -rf $(BUILD_DIR)

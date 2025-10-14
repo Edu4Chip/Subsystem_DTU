@@ -5,7 +5,7 @@ import chisel3.util._
 import chisel3.BlackBox
 import os.copy.over
 
-object Sky130Sram {
+object Sky130Sram extends MemoryFactory {
 
   def create(words: Int): AbstractMemory = {
     val m = Module(new Sky130Sram(words))

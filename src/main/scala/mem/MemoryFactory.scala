@@ -5,20 +5,45 @@ import chisel3.util.log2Ceil
 
 import misc.Helper.WordToByte
 import misc.Helper.BytesToWord
+import scala.util.DynamicVariable
 
 trait AbstractMemory {
   def read(addr: UInt): UInt
   def write(addr: UInt, data: UInt, strb: UInt): Unit
 }
 
+trait MemoryFactory {
+  def create(n: Int): AbstractMemory
+}
+
 object MemoryFactory {
 
-  private var mem: Int => AbstractMemory = words =>
-    ChiselSyncMemory.create(words)
+  private val factory: DynamicVariable[MemoryFactory] = new DynamicVariable(ChiselSyncMemory)
 
-  def create(n: Int): AbstractMemory = mem(n)
+  def create(n: Int): AbstractMemory = factory.value.create(n)
 
-  def use(mem: Int => AbstractMemory): Unit = {
-    this.mem = mem
+  def using(f: MemoryFactory)(block: => Unit): Unit = {
+    factory.withValue(f) {
+      block
+    }
+  }
+
+  private val options = Map(
+    "RtlSyncMemory" -> ChiselSyncMemory,
+    "RtlRegMemory" -> RegMemory,
+    "DffRam" -> DffRam,
+    "DidacticSram" -> DidacticSram,
+    "OpenRamSky130" -> Sky130Sram
+  )
+
+  def fromString(name: String): MemoryFactory = {
+    options.getOrElse(name, throw new Exception(s"Unknown memory type $name"))
+  }
+
+  def help(): Unit = {
+    println("Available memory types:")
+    options.keys.foreach { k =>
+      println(s" - $k")
+    }
   }
 }

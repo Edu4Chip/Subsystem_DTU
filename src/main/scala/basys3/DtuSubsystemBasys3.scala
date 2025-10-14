@@ -9,17 +9,19 @@ import dtu.DtuSubsystemConfig
 import io._
 import chisel3.experimental.Analog
 import mem.MemoryFactory
+import mem.ChiselSyncMemory
 
 object DtuSubsystemBasys3 extends App {
-  MemoryFactory.use(mem.ChiselSyncMemory.create)
-  ChiselStage.emitSystemVerilogFile(
-    new DtuSubsystemBasys3(
-      DtuSubsystemConfig.default
-        .copy(romProgramPath = args.head)
-    ),
-    "--split-verilog" +: (args.tail),
-    Array()
-  )
+  MemoryFactory.using(ChiselSyncMemory) {
+    ChiselStage.emitSystemVerilogFile(
+      new DtuSubsystemBasys3(
+        DtuSubsystemConfig.default
+          .copy(romProgramPath = args.head)
+      ),
+      "--split-verilog" +: (args.tail),
+      Array()
+    )
+  }
 }
 
 class DtuSubsystemBasys3(conf: DtuSubsystemConfig) extends Module {

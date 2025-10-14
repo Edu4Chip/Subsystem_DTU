@@ -3,7 +3,7 @@ package mem
 import chisel3._
 import chisel3.util._
 
-object DidacticSram {
+object DidacticSram extends MemoryFactory {
   def create(words: Int): AbstractMemory = {
     val m = Module(new DidacticSram(words))
     m.io.wordAddr := DontCare

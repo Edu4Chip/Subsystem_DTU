@@ -6,7 +6,7 @@ import chisel3.util.log2Ceil
 import misc.Helper.WordToByte
 import misc.Helper.BytesToWord
 
-object RegMemory {
+object RegMemory extends MemoryFactory {
   def create(words: Int): AbstractMemory = {
     val m = Module(new RegMemory(words))
     m.io.wordAddr := DontCare

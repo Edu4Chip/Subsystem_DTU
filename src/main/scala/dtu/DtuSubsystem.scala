@@ -19,29 +19,25 @@ import mem.MemoryFactory
 
 object DtuSubsystem extends App {
 
-  MemoryFactory.use(args.head match {
-    case "sky130Sram"   => mem.Sky130Sram.create
-    case "chiselSram"   => mem.ChiselSyncMemory.create
-    case "didacticSram" => mem.DidacticSram.create
-    case "registerRam"  => mem.RegMemory.create
-    case _              => throw new Exception("Unknown memory type")
-  })
+  MemoryFactory.help()
 
-  ChiselStage.emitSystemVerilogFile(
-    new DtuSubsystem(
-      DtuSubsystemConfig.default
-        .copy(
-          romProgramPath = args(1),
-          instructionMemorySize = 1 << 10,
-          dataMemorySize = 1 << 10,
-          frequency = 8_000_000,
-          lerosBaudRate = 9600,
-          ponteBaudRate = 9600,
-        )
-    ).printMemoryMap(),
-    args.drop(2),
-    Array("--lowering-options=disallowLocalVariables,disallowPackedArrays")
-  )
+  MemoryFactory.using(MemoryFactory.fromString(args.head)) {
+    ChiselStage.emitSystemVerilogFile(
+      new DtuSubsystem(
+        DtuSubsystemConfig.default
+          .copy(
+            romProgramPath = args(1),
+            instructionMemorySize = 1 << 10,
+            dataMemorySize = 1 << 10,
+            frequency = 8_000_000,
+            lerosBaudRate = 9600,
+            ponteBaudRate = 9600,
+          )
+      ).printMemoryMap(),
+      args.drop(2),
+      Array("--lowering-options=disallowLocalVariables,disallowPackedArrays")
+    )
+  }
 }
 
 object IbexCode extends App {

@@ -22,33 +22,32 @@ import wishbone._
 
 object LerosCaravel extends App {
 
-  MemoryFactory.use(args.head match {
-    case "sky130Sram"   => mem.Sky130Sram.create
-    case "chiselSram"   => mem.ChiselSyncMemory.create
-    case "didacticSram" => mem.DidacticSram.create
-    case "registerRam"  => mem.RegMemory.create
-    case _              => throw new Exception("Unknown memory type")
-  })
+  MemoryFactory.help()
 
-  ChiselStage.emitSystemVerilogFile(
-    new LerosCaravel(
-      DtuSubsystemConfig.default
-        .copy(
-          romProgramPath = args(1),
-          instructionMemorySize = 1 << 5,
-          dataMemorySize = 1 << 5,
-          frequency = 8_000_000,
-          lerosBaudRate = 9600,
-          ponteBaudRate = 9600,
-        )
-    ),
-    args.drop(2),
-    Array("--lowering-options=disallowLocalVariables,disallowPackedArrays")
-  )
+  MemoryFactory.using(MemoryFactory.fromString(args.head)) {
+    ChiselStage.emitSystemVerilogFile(
+      new LerosCaravel(
+        DtuSubsystemConfig.default
+          .copy(
+            romProgramPath = args(1),
+            instructionMemorySize = 1 << 10,
+            dataMemorySize = 1 << 10,
+            frequency = 10_000_000,
+            lerosBaudRate = 115200,
+            ponteBaudRate = 115200,
+          ),
+        args.head
+      ),
+      args.drop(2),
+      Array("--lowering-options=disallowLocalVariables,disallowPackedArrays")
+    )
+  }
 
 }
 
-class LerosCaravel(conf: DtuSubsystemConfig) extends Module {
+class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module {
+
+  override def desiredName: String = s"LerosCaravel_${memoryType}"
 
   val io = IO(new Bundle {
 

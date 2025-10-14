@@ -6,7 +6,7 @@ import chisel3.util.log2Ceil
 import misc.Helper.WordToByte
 import misc.Helper.BytesToWord
 
-object ChiselSyncMemory {
+object ChiselSyncMemory extends MemoryFactory {
   def create(words: Int): AbstractMemory = {
     val m = Module(new ChiselSyncMemory(words))
     m.io.wordAddr := DontCare
