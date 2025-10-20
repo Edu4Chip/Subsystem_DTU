@@ -118,7 +118,7 @@ class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
     0.B,
     ponte.io.uart.tx,
   )
-  io.gpio.oe := gpio.gpioPort.oe ## 0xa.U(4.W)
+  io.gpio.outputEnable := gpio.gpioPort.oe ## 0xa.U(4.W)
   gpio.gpioPort.in := io.gpio.in(conf.gpioPins - 1, 4)
 
 }

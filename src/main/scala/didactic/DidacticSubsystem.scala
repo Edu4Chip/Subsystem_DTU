@@ -22,7 +22,12 @@ class DidacticSubsystemIO(conf: DidacticConfig) extends Bundle {
 
   val ssCtrl = Input(UInt(conf.ssCtrlPins.W))
 
-  val gpio = new GpioPins(conf.gpioPins)
+  val gpio = new Bundle {
+    val in = Input(UInt(conf.gpioPins.W))
+    val out = Output(UInt(conf.gpioPins.W))
+    /** output enable active low */
+    val outputEnable = Output(UInt(conf.gpioPins.W))
+  }
 }
 
 abstract class DidacticSubsystem extends Module {
