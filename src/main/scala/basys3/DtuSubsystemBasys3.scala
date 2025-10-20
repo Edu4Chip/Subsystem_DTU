@@ -43,7 +43,7 @@ class DtuSubsystemBasys3(conf: DtuSubsystemConfig) extends Module {
 
   val pmodDriver = Module(new Tristate(conf.gpioPins - 4))
   pmodDriver.io.busDriveValue := dtu.io.gpio.out
-  pmodDriver.io.driveBus := ~dtu.io.gpio.outputEnable
+  pmodDriver.io.driveBus := ~dtu.io.gpio.oe
   pmodDriver.io.bus <> io.pmod
 
   io.leds := dtu.io.gpio.out(math.min(15, conf.gpioPins - 1), 4)

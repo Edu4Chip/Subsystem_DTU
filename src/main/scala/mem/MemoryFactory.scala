@@ -22,7 +22,7 @@ object MemoryFactory {
 
   def create(n: Int): AbstractMemory = factory.value.create(n)
 
-  def using(f: MemoryFactory)(block: => Unit): Unit = {
+  def using[T](f: MemoryFactory)(block: => T): T = {
     factory.withValue(f) {
       block
     }
@@ -33,7 +33,8 @@ object MemoryFactory {
     "RtlRegMemory" -> RegMemory,
     "DffRam" -> DffRam,
     "DidacticSram" -> DidacticSram,
-    "OpenRamSky130" -> Sky130Sram
+    "OpenRamSky130" -> Sky130Sram,
+    "ChipFoundrySram" -> ChipFoundrySram
   )
 
   def fromString(name: String): MemoryFactory = {

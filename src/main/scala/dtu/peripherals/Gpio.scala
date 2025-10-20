@@ -43,6 +43,6 @@ class Gpio(pins: Int) extends Module {
   }
 
   gpioPort.out := outputs
-  gpioPort.outputEnable := outputEnables
+  gpioPort.oe := outputEnables
 
 }

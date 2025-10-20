@@ -29,9 +29,9 @@ object DtuSubsystem extends App {
             romProgramPath = args(1),
             instructionMemorySize = 1 << 10,
             dataMemorySize = 1 << 10,
-            frequency = 8_000_000,
-            lerosBaudRate = 9600,
-            ponteBaudRate = 9600,
+            frequency = 100_000_000,
+            lerosBaudRate = 115200,
+            ponteBaudRate = 115200,
           )
       ).printMemoryMap(),
       args.drop(2),
@@ -118,7 +118,7 @@ class DtuSubsystem(conf: DtuSubsystemConfig) extends DidacticSubsystem {
     0.B,
     ponte.io.uart.tx,
   )
-  io.gpio.outputEnable := gpio.gpioPort.outputEnable ## 0xa.U(4.W)
+  io.gpio.oe := gpio.gpioPort.oe ## 0xa.U(4.W)
   gpio.gpioPort.in := io.gpio.in(conf.gpioPins - 1, 4)
 
 }

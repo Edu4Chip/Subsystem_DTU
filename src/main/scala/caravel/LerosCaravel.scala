@@ -45,29 +45,11 @@ object LerosCaravel extends App {
 
 }
 
-class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module {
+class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module with CaravelUserProject {
 
   override def desiredName: String = s"LerosCaravel_${memoryType}"
 
-  val io = IO(new Bundle {
-
-    // wishbone port
-    val wb = WishbonePort.targetPort(32)
-
-    // logic analyzer
-    val la = new Bundle {
-      val in = Input(UInt(128.W))
-      val out = Output(UInt(128.W))
-      val outputEnable = Input(UInt(128.W))
-    }
-
-    // IO pads
-    val gpio = new GpioPins(16)
-
-    // IRQ
-    val user_irq = Output(UInt(3.W))
-
-  })
+  val io = IO(new CaravelUserProjectIO)
 
   val lerosRx = io.gpio.in(3)
   val ponteRx = io.gpio.in(1)
@@ -122,7 +104,7 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
     0.B,
     ponte.io.uart.tx,
   )
-  io.gpio.outputEnable := gpio.gpioPort.outputEnable ## 0xa.U(4.W)
+  io.gpio.oe := gpio.gpioPort.oe ## 0xa.U(4.W)
   gpio.gpioPort.in := io.gpio.in(conf.gpioPins - 1, 4)
 
 }

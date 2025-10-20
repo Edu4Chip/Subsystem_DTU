@@ -24,7 +24,8 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
 
   FormalHelper.enableProperties()
 
-  MemoryFactory.use(RegMemory.create)
+  val memoryFactory = RegMemory
+
   val config = DtuSubsystemConfig.default
     .copy(
       romProgramPath = "leros-asm/didactic.s",
@@ -53,7 +54,7 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
     .map(_.toString())
 
   it should "correctly execute all Leros test programs" in {
-    test(new DtuTestHarness(config)).withAnnotations(
+    test(MemoryFactory.using(memoryFactory)(new DtuTestHarness(config))).withAnnotations(
       Seq()
     ) { dut =>
       progs.foreach(testProgram(dut))
@@ -66,14 +67,14 @@ class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
   behavior of "DTU Subsystem"
 
   it should "pass adder test" in {
-    MemoryFactory.use(RegMemory.create)
+  
     val config = DtuSubsystemConfig.default
       .copy(
         romProgramPath = "leros-asm/didactic.s",
         lerosBaudRate = 100000000
       )
 
-    test(new DtuTestHarness(config)).withAnnotations(
+    test(MemoryFactory.using(RegMemory)(new DtuTestHarness(config))).withAnnotations(
       Seq()
     ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
@@ -128,14 +129,13 @@ class SelfTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
   behavior of "DTU Subsystem"
 
   it should "pass self-test" in {
-    MemoryFactory.use(ChiselSyncMemory.create)
     val config = DtuSubsystemConfig.default
       .copy(
         romProgramPath = "leros-asm/didactic.s",
         lerosBaudRate = 100000000
       )
 
-    test(new DtuTestHarness(config)).withAnnotations(
+    test(MemoryFactory.using(ChiselSyncMemory)(new DtuTestHarness(config))).withAnnotations(
       Seq()
     ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)

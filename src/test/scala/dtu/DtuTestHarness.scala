@@ -37,7 +37,7 @@ class DtuTestHarness(conf: DtuSubsystemConfig) extends Module {
 
   io.apb <> dtu.io.apb
   io.gpio.out := dtu.io.gpio.out(conf.gpioPins - 1, 4)
-  io.gpio.outputEnable := dtu.io.gpio.outputEnable(conf.gpioPins - 1, 4)
+  io.gpio.oe := dtu.io.gpio.oe(conf.gpioPins - 1, 4)
   dtu.io.gpio.in := Cat(io.gpio.in, io.lerosUart.rx, 0.B, io.ponteUart.rx, 0.B)
 
   io.lerosUart.tx := dtu.io.gpio.out(2)
