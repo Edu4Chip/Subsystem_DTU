@@ -35,6 +35,7 @@ object LerosCaravel extends App {
             frequency = 10_000_000,
             lerosBaudRate = 115200,
             ponteBaudRate = 115200,
+            gpioPins = 8,
           ),
         args.head
       ),
