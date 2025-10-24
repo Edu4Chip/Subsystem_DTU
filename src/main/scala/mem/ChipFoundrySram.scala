@@ -8,10 +8,10 @@ object ChipFoundrySram extends MemoryFactory {
   def create(words: Int): AbstractMemory = {
     val m = Module(new ChipFoundrySram(words))
     m.io.wordAddr := DontCare
-    m.io.write := DontCare
     m.io.wrData := DontCare
     m.io.strb := DontCare
-    m.io.valid := 0.B
+    m.io.read := 0.B
+    m.io.write := 0.B
     m
   }
 }
@@ -19,7 +19,7 @@ object ChipFoundrySram extends MemoryFactory {
 class ChipFoundrySram(words: Int) extends Module with AbstractMemory {
 
   val io = IO(new Bundle {
-    val valid = Input(Bool())
+    val read = Input(Bool())
     val wordAddr = Input(UInt(log2Ceil(words).W))
     val wrData = Input(UInt(32.W))
     val rdData = Output(UInt(32.W))
@@ -32,21 +32,18 @@ class ChipFoundrySram(words: Int) extends Module with AbstractMemory {
     case _ => throw new Exception(s"Unsupported memory size $words for ChipFoundrySram")
   })
 
-  mem.io.wb_clk_i := clock
-  mem.io.wb_rst_i := reset.asBool
-  mem.io.wbs_stb_i := io.valid
-  mem.io.wbs_cyc_i := io.valid
-  mem.io.wbs_we_i := io.write
-  mem.io.wbs_sel_i := io.strb
-  mem.io.wbs_dat_i := io.wrData
-  mem.io.wbs_adr_i := io.wordAddr
-  io.rdData := mem.io.wbs_dat_o
-  // mem.io.wbs_ack_o is ignored
+  mem.io.clk_i := clock
+  mem.io.rst_i := reset.asBool
+  mem.io.addr_i := io.wordAddr
+  mem.io.read_en_i := io.read
+  mem.io.write_en_i := io.write
+  mem.io.sel_i := io.strb
+  mem.io.wr_data_i := io.wrData
+  io.rdData := mem.io.rd_data_o
 
   def read(wordAddr: UInt): UInt = {
     io.wordAddr := wordAddr
-    io.write := 0.B
-    io.valid := 1.B
+    io.read := 1.B
     io.rdData
   }
 
@@ -55,7 +52,6 @@ class ChipFoundrySram(words: Int) extends Module with AbstractMemory {
     io.wrData := data
     io.strb := strb
     io.write := 1.B
-    io.valid := 1.B
   }
 
 }
@@ -63,18 +59,16 @@ class ChipFoundrySram(words: Int) extends Module with AbstractMemory {
 
 class ChipFoundrySramBlackbox extends BlackBox {
 
-  override val desiredName = "CF_SRAM_1024x32_wb_wrapper"
+  override val desiredName = "CF_SRAM_1024x32_wrapper"
 
   val io = IO(new Bundle {
-    val wb_clk_i = Input(Clock())
-    val wb_rst_i = Input(Bool())
-    val wbs_stb_i = Input(Bool())
-    val wbs_cyc_i = Input(Bool())
-    val wbs_we_i = Input(Bool())
-    val wbs_sel_i = Input(UInt(4.W))
-    val wbs_dat_i = Input(UInt(32.W))
-    val wbs_adr_i = Input(UInt(32.W))
-    val wbs_ack_o = Output(Bool())
-    val wbs_dat_o = Output(UInt(32.W))
+    val clk_i = Input(Clock())
+    val rst_i = Input(Bool())
+    val addr_i = Input(UInt(8.W))
+    val read_en_i = Input(Bool())
+    val write_en_i = Input(Bool())
+    val sel_i = Input(UInt(4.W))
+    val wr_data_i = Input(UInt(32.W))
+    val rd_data_o = Output(UInt(32.W))
   })
 }
