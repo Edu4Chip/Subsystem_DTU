@@ -42,31 +42,40 @@ class InstructionMemory(noBytes: Int) extends Module {
 
   val mem = MemoryFactory.create(noBytes / 4)
 
-  apbPort.pready := 0.B
-  apbPort.pslverr := 0.B
-  apbPort.prdata := DontCare
+  
 
-  instrPort.instr := DontCare
 
-  when(apbPort.psel) {
-
-    apbPort.pready := apbPort.penable
-
-    when(!apbPort.pwrite) {
-      apbPort.prdata := mem.read(apbPort.paddr(addrWidth - 1, 2))
-    }.elsewhen(apbPort.penable && apbPort.pwrite) {
-      mem.write(
-        apbPort.paddr(addrWidth - 1, 2),
-        apbPort.pwdata,
-        apbPort.pstrb
-      )
-    }
-
-  } otherwise {
-
-    val word = mem.read(instrPort.addr(addrWidth - 2, 1))
-    val upr = word(31, 16)
-    val lwr = word(15, 0)
-    instrPort.instr := Mux(RegNext(instrPort.addr(0)), upr, lwr)
+  val ackReg = RegInit(0.B)
+  when(ackReg) {
+    ackReg := 0.B
+  }.elsewhen(apbPort.psel) {
+    ackReg := 1.B
   }
+
+  apbPort.pready := ackReg
+
+  val rdData = mem.read(Mux(
+    apbPort.psel, // are we replying to a apb access?
+    apbPort.paddr(addrWidth - 1, 2),  // word address for apb
+    instrPort.addr(addrWidth - 2, 1)) // word address for instruction fetch
+  )
+
+  apbPort.pready := ackReg
+  apbPort.pslverr := 0.B
+  apbPort.prdata := rdData
+
+  instrPort.instr := Mux(
+    RegNext(instrPort.addr(0)),
+    rdData(31, 16),
+    rdData(15, 0)
+  )
+
+  when(apbPort.psel && apbPort.penable && apbPort.pwrite) {
+    mem.write(
+      apbPort.paddr(addrWidth - 1, 2),
+      apbPort.pwdata,
+      apbPort.pstrb
+    )
+  }
+
 }

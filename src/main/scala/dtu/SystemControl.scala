@@ -25,18 +25,22 @@ class SystemControl extends Module {
     lerosBootFromRamReg,
     lerosResetReg
   )
-  apbPort.pready := 0.B
+
+  val ackReg = RegInit(0.B)
+  when(ackReg) {
+    ackReg := 0.B
+  }.elsewhen(apbPort.psel) {
+    ackReg := 1.B
+  }
+
+  apbPort.pready := ackReg
   apbPort.pslverr := 0.B
 
-  when(apbPort.psel && apbPort.penable) {
+  when(apbPort.psel && apbPort.penable && apbPort.pwrite) {
 
-    apbPort.pready := 1.B
-
-    when(apbPort.pwrite) {
-      lerosResetReg := apbPort.pwdata(0)
-      lerosBootFromRamReg := apbPort.pwdata(1)
-      lerosUartLoopBackReg := apbPort.pwdata(2)
-    }
+    lerosResetReg := apbPort.pwdata(0)
+    lerosBootFromRamReg := apbPort.pwdata(1)
+    lerosUartLoopBackReg := apbPort.pwdata(2)
 
   }
 

@@ -35,17 +35,19 @@ class RegBlock(n: Int) extends Module {
   val lerosToIbexRegs = RegInit(VecInit(Seq.fill(n)(0.U(32.W))))
 
   // APB access
+  val apbAckReg = RegInit(0.B)
+  when(apbAckReg) {
+    apbAckReg := 0.B
+  }.elsewhen(apbPort.psel) {
+    apbAckReg := 1.B
+  }
   apbPort.pslverr := 0.B
-  apbPort.pready := 0.B
+  apbPort.pready := apbAckReg
   val apbIndex = apbPort.paddr(aw - 1, 2)
-  apbPort.prdata := lerosToIbexRegs(RegNext(apbIndex))
+  apbPort.prdata := RegNext(lerosToIbexRegs(apbIndex))
 
-  when(apbPort.psel && apbPort.penable) {
-    apbPort.pready := 1.B
-
-    when(apbPort.pwrite) {
-      ibexToLerosRegs(apbIndex) := apbPort.pwdata
-    }
+  when(apbPort.psel && apbPort.penable && apbPort.pwrite) {
+    ibexToLerosRegs(apbIndex) := apbPort.pwdata
   }
 
   // Databus access
