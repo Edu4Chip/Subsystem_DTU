@@ -62,6 +62,11 @@ class ApbMux(
     when(selected) {
       errorTarget.apbPort.psel := 0.B
       port.psel := 1.B
+      io.master.pslverr := 0.B
+    }
+
+    val wasSelected = RegNext(selected && !port.pready, false.B)
+    when(wasSelected) {
       io.master.pready := port.pready
       io.master.prdata := port.prdata
       io.master.pslverr := port.pslverr
