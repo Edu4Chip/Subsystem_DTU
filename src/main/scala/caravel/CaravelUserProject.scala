@@ -20,7 +20,7 @@ class CaravelUserProjectIO extends Bundle {
   }
 
   /** IO pads */
-  val gpio = new GpioPins(16)
+  val gpio = new GpioPins(8)
 
   /** IRQ */
   val user_irq = Output(UInt(3.W))
