@@ -1,13 +1,13 @@
 package caravel
 
 import dtu.DtuInterface
-import wishbone.WishboneBfm
+import wishbone._
 import chisel3.Clock
 
 
-case class LerosCaravelTestHarness(dut: caravel.CaravelUserProject, clk: Clock, offset: Int) extends DtuInterface {
+case class LerosCaravelTestHarness(dut: HasWishbonePort, clk: Clock, offset: Int) extends DtuInterface {
 
-  val wbBfm = new WishboneBfm(clk, dut.io.wb)
+  val wbBfm = new WishboneBfm(clk, dut.getWbPort)
 
   def send(addr: Int, data: Seq[Int]): Unit = {
     assert(addr >= 0 && addr < 0x1000, s"Address 0x${addr.toHexString} out of range (send)")

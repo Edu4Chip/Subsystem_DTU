@@ -9,6 +9,10 @@ package wishbone {
 
   import misc.BusTarget
 
+  trait HasWishbonePort {
+    def getWbPort: WishbonePort
+  }
+
   object WishbonePort {
     def masterPort(addrWidth: Int): WishbonePort = {
       Flipped(new WishbonePort(addrWidth))

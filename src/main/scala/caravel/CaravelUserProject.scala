@@ -5,8 +5,10 @@ import wishbone._
 import io._
 import dtu.DtuSubsystemConfig
 
-trait CaravelUserProject {
+trait CaravelUserProject extends HasWishbonePort {
   val io: CaravelUserProjectIO
+
+  override def getWbPort: WishbonePort = io.wb
 
   def printMemoryMap(): this.type = {
     println(s"--- Wishbone Memory Map ${"-" * 46}")

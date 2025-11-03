@@ -47,7 +47,7 @@ object LerosCaravel extends App {
 
 }
 
-class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module {
+class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module with HasWishbonePort {
 
   override def desiredName: String = s"LerosCaravel_${memoryType}"
 
@@ -64,7 +64,8 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
     /** IO pads */
     val gpio = new GpioPins(conf.gpioPins)
   
-})
+  })
+  override def getWbPort: WishbonePort = io.wb
 
   val lerosRx = io.gpio.in(3)
   val ponteRx = io.gpio.in(1)
