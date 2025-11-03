@@ -56,6 +56,7 @@ wait_uart:
 
         // load uart data
         ldind 0x45 // read uart data
+        stind 0x44 // pop uart data
 
 // finalize
         stind 1 // write final result to CCR[1]

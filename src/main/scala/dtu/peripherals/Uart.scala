@@ -11,10 +11,11 @@ import leros.uart.{BufferedTx, UARTRx}
   *
   * Address 0: Reading returns the status of the UART peripheral. Bit 0
   * indicates whether new data is available. Bit 1 indicates whether the UART
-  * peripheral is ready to accept new data.
+  * peripheral is ready to accept new data. Writing to this address pops the receive
+  * buffer.
   *
   * Address 1: Writing enqueues the lower byte into the transmit buffer. Reading
-  * returns the received data and removes it from the receive buffer.
+  * returns data from the receive buffer.
   *
   * @param frequency
   *   the frequency of the system clock
@@ -44,8 +45,8 @@ class Uart(frequency: Int, baud: Int) extends Module {
 
   when(dmemPort.wr) {
     switch(dmemPort.wrAddr) {
-      is(0.U) {
-        // nothing to do
+      is(0.U) { // write to status register pops the receive buffer
+        rx.io.out.ready := 1.B
       }
       is(1.U) {
         tx.io.channel.valid := 1.B
