@@ -38,6 +38,17 @@ package wishbone {
       children.toSeq
     }
 
+    def printMemoryMap(): Unit = {
+      println(s"--- Wishbone Memory Map ${"-" * 46}")
+      val targets = getTargets()
+      targets.foreach { target =>
+        println(
+          target.toString()
+        )
+      }
+      println(s"${"-" * (19 + 46)}")
+    }
+
 
     val MAX_RESP_TIME = 11
 

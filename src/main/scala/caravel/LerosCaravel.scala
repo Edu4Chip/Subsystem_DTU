@@ -19,6 +19,7 @@ import chisel3.util.log2Ceil
 import mem.MemoryFactory
 import dtu._
 import wishbone._
+import chisel3.util.experimental.BoringUtils
 
 object LerosCaravel extends App {
 
@@ -46,11 +47,24 @@ object LerosCaravel extends App {
 
 }
 
-class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module with CaravelUserProject {
+class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module {
 
   override def desiredName: String = s"LerosCaravel_${memoryType}"
 
-  val io = IO(new CaravelUserProjectIO(conf))
+  val io = IO(new Bundle {
+    /** wishbone port */
+    val wb = WishbonePort.targetPort(conf.apbAddrWidth)
+
+
+    val dbg = new Bundle {
+      val pc = Output(UInt(conf.instructionMemoryAddrWidth.W))
+      val acc = Output(UInt(32.W))
+    }
+
+    /** IO pads */
+    val gpio = new GpioPins(conf.gpioPins)
+  
+})
 
   val lerosRx = io.gpio.in(3)
   val ponteRx = io.gpio.in(1)
@@ -95,9 +109,8 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
     uart.dmemPort -> 0x8110, // UART at 0x8110
   )
 
-  io.la.out := 0.U
-
-  io.user_irq := 0.U
+  io.dbg.pc := BoringUtils.bore(leros.pcReg)
+  io.dbg.acc := BoringUtils.bore(leros.alu.accuReg)
 
   io.gpio.out := gpio.gpioPort.out ## Cat(
     0.B,
@@ -107,5 +120,10 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
   )
   io.gpio.oe := gpio.gpioPort.oe ## 0xa.U(4.W)
   gpio.gpioPort.in := io.gpio.in(conf.gpioPins - 1, 4)
+
+  def printMemoryMap(): this.type = {
+    io.wb.printMemoryMap()
+    this
+  }
 
 }

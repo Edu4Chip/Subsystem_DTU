@@ -33,22 +33,17 @@ class CaravelTop(baud: Int) extends Module with CaravelUserProject {
     Module(new LerosCaravel(conf, "ChipFoundrySram"))
   }
   lerosCfram.io.gpio.in := io.gpio.in
-  lerosCfram.io.la.in := io.la.in
-  lerosCfram.io.la.oe := io.la.oe
 
   val lerosSky130 = MemoryFactory.using(mem.ChiselSyncMemory) {
     Module(new LerosCaravel(conf, "ChipFoundrySram"))
   }
   lerosSky130.io.gpio.in := io.gpio.in
-  lerosSky130.io.la.in := io.la.in
-  lerosSky130.io.la.oe := io.la.oe
+
 
   val lerosDffram = MemoryFactory.using(mem.ChiselSyncMemory) {
     Module(new LerosCaravel(conf, "ChipFoundrySram"))
   }
   lerosDffram.io.gpio.in := io.gpio.in
-  lerosDffram.io.la.in := io.la.in
-  lerosDffram.io.la.oe := io.la.oe
 
   WishboneMux(io.wb)(
     lerosCfram.io.wb -> 0x00000000,

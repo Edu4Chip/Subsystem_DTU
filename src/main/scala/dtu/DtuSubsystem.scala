@@ -52,6 +52,20 @@ object IbexCode extends App {
   }
 }
 
+object ProgArray extends App {
+  val name = "didactic_adder"
+
+  val code = Assembler.assemble(s"leros-asm/$name.s")
+  println(s"unsigned int $name[] = {")
+  code.grouped(2).zipWithIndex.foreach {
+    case (Array(a, b), i) =>
+      println(f"  0x$b%04x$a%04x, // 0x${i * 4}%04x")
+    case (Array(a), i) =>
+      println(f"  0x$a%04x, // 0x${i * 4}%04x")
+  }
+  println("};")
+}
+
 object GdbLoader extends App {
   val code = Assembler.assemble("leros-asm/selftest.s")
   code.grouped(2).zipWithIndex.foreach {
