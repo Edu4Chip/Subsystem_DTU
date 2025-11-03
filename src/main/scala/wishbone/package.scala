@@ -3,8 +3,11 @@ import chisel3._
 import chiseltest._
 import chiseltest.formal._
 import misc.FormalHelper._
+import misc.BusTarget
 
 package wishbone {
+
+  import misc.BusTarget
 
   object WishbonePort {
     def masterPort(addrWidth: Int): WishbonePort = {
@@ -25,6 +28,15 @@ package wishbone {
     val adr = Input(UInt(addrWidth.W))
     val dat_o = Output(UInt(32.W))
     val ack = Output(Bool())
+
+    val children = scala.collection.mutable.ListBuffer[BusTarget]()
+    var addChild: BusTarget => Unit = child => {
+      children += child
+    }
+
+    def getTargets(): Seq[BusTarget] = {
+      children.toSeq
+    }
 
 
     val MAX_RESP_TIME = 11
@@ -93,6 +105,78 @@ package wishbone {
         cf"${name}: adr is stable during an active transaction"
       )
       assume(
+        wbTxActive -> stable(dat_i),
+        cf"${name}: dat_i is stable during an active transaction"
+      )
+
+
+
+
+    }
+
+    def masterPortProperties(name: String): Unit = {
+
+      val wbTxActive = RegInit(0.B) // tracks ongoing transaction
+      when(wbTxActive && ack) {
+        wbTxActive := 0.B
+      }.elsewhen(cyc && stb) {
+        wbTxActive := 1.B
+      }
+
+      // Target Properties
+      assume(
+        rose(wbTxActive).within(2) |=> ack,
+        cf"${name}: the target signals ack at least 2 cycles after the beginning of a transaction"
+      )
+
+      assume(
+        ack -> wbTxActive,
+        cf"${name}: the target only asserts ack when a transaction is ongoing"
+      )
+
+      // Livemess check
+      assert(
+        wbTxActive.within(MAX_RESP_TIME) |=> !wbTxActive,
+        cf"${name}: an active transaction should be completed within $MAX_RESP_TIME cycles"
+      )
+
+
+      // Master control properties
+      assert(
+        stb && !wbTxActive |=> wbTxActive,
+        cf"${name}: asserting stb while idle leads to the access phase"
+      )
+
+      assert(
+        wbTxActive -> cyc,
+        cf"${name}: cyc is asserted during an active transaction"
+      )
+      assert(
+        wbTxActive -> stb,
+        cf"${name}: stb is asserted during an active transaction"
+      )
+      assert(
+        stb -> cyc,
+        cf"${name}: stb can only be asserted when cyc is asserted"
+      )
+      assert(
+        cyc -> stb,
+        cf"${name}: cyc can only be asserted when stb is asserted"
+      )
+
+      assert(
+        wbTxActive -> stable(we),
+        cf"${name}: we is stable during an active transaction"
+      )
+      assert(
+        wbTxActive -> stable(sel),
+        cf"${name}: sel is stable during an active transaction"
+      )
+      assert(
+        wbTxActive -> stable(adr),
+        cf"${name}: adr is stable during an active transaction"
+      )
+      assert(
         wbTxActive -> stable(dat_i),
         cf"${name}: dat_i is stable during an active transaction"
       )

@@ -10,12 +10,12 @@ import chiseltest.formal._
 import misc.Helper.UIntRangeCheck
 import misc.MemoryMapHelper
 import misc.FormalHelper._
-import leros.shared.Constants.add
+import misc.BusTarget
 
 class ApbMux(
     addrWidth: Int,
     dataWidth: Int,
-    targetInfos: Seq[ApbTarget]
+    targetInfos: Seq[BusTarget]
 ) extends Module {
 
   val io = IO(new Bundle {
@@ -37,13 +37,38 @@ class ApbMux(
   formalProperties {
 
     io.master.targetPortProperties("ApbMux.master")
-    io.targets.foreach(_.masterPortProperties("ApbMux.target"))
+    io.targets.zipWithIndex.foreach { case (port, idx) =>
+      port.masterPortProperties(s"ApbMux.target[$idx]")
+    }
 
     io.targets.lazyZip(targetInfos).foreach { case (port, targetInfo) =>
+
+      val selected = io.master.paddr >= targetInfo.byteAddrRange.start.U &&
+        io.master.paddr < targetInfo.byteAddrRange.end.U
+
       assert(
-        (io.master.paddr >= targetInfo.byteAddrRange.start.U
-          && io.master.paddr < targetInfo.byteAddrRange.end.U) -> (port.psel === io.master.psel),
+        selected -> (port.psel === io.master.psel),
         "port psel should be equal to master psel when address is in ports range"
+      )
+      assert(
+        selected -> (port.paddr === io.master.paddr),
+        "port paddr should be equal to master paddr when address is in ports range"
+      )
+      assert(
+        selected -> (port.pwdata === io.master.pwdata),
+        "port pwdata should be equal to master pwdata when address is in ports range"
+      )
+      assert(
+        selected -> (port.pwrite === io.master.pwrite),
+        "port pwrite should be equal to master pwrite when address is in ports range"
+      )
+      assert(
+        selected -> (port.pstrb === io.master.pstrb),
+        "port pstrb should be equal to master pstrb when address is in ports range"
+      )
+      assert(
+        (selected && port.pready) -> (io.master.prdata === port.prdata),
+        "when port is selected and ready, master prdata should be equal to port prdata when address is in ports range"
       )
     }
 
@@ -80,12 +105,12 @@ object ApbMux {
 
     // byte address ranges for each target
     val targets = targetTuples.map { case (port, base) =>
-      val t = ApbTarget(port.toString(), base, port.addrWidth)
+      val t = BusTarget(port.toString(), base, port.addrWidth)
       master.addChild(t)
       t
     }
 
-    targets.foreach(_.checkInsideMasterAddrSpace(master))
+    targets.foreach(_.checkInsideMasterAddrSpace(master.addrWidth))
 
     // check for overlap of target address ranges
     MemoryMapHelper.findAddressOverlap(
@@ -106,15 +131,6 @@ object ApbMux {
       case (target, port) =>
         target <> port
     }
-  }
-
-  def apply(targetTuples: (ApbPort, Int)*): ApbPort = {
-    val master = ApbPort.targetPort(
-      targetTuples.head._1.addrWidth,
-      targetTuples.head._1.dataWidth
-    )
-    apply(master)(targetTuples: _*)
-    master
   }
 
 }

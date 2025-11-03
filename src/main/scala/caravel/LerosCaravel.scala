@@ -38,7 +38,7 @@ object LerosCaravel extends App {
             gpioPins = 8,
           ),
         args.head
-      ),
+      ).printMemoryMap(),
       args.drop(2),
       Array("--lowering-options=disallowLocalVariables,disallowPackedArrays")
     )
@@ -50,7 +50,7 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
 
   override def desiredName: String = s"LerosCaravel_${memoryType}"
 
-  val io = IO(new CaravelUserProjectIO)
+  val io = IO(new CaravelUserProjectIO(conf))
 
   val lerosRx = io.gpio.in(3)
   val ponteRx = io.gpio.in(1)
@@ -60,7 +60,7 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
   ponte.io.uart.rx := ponteRx
 
   val leros = Module(new Leros(conf.lerosSize, conf.instructionMemoryAddrWidth))
-  leros.reset := reset.asBool || sysCtrl.ctrlPort.lerosReset
+  leros.reset := RegNext(sysCtrl.ctrlPort.lerosReset, 1.B)
 
   val instrMem = Module(new InstructionMemory(conf.instructionMemorySize))
   val rom = Module(

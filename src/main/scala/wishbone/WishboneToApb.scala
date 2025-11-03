@@ -5,7 +5,7 @@ import misc.FormalHelper._
 import chisel3._
 
 import apb.ApbPort
-
+import misc.BusTarget
 
 
 class WishboneToApb(addrWidth: Int) extends Module {
@@ -47,6 +47,9 @@ object WishboneToApb {
   def apply(wb: WishbonePort): ApbPort = {
     val bridge = Module(new WishboneToApb(wb.addrWidth))
     bridge.io.wb <> wb
+    bridge.io.apb.addChild = (child: BusTarget) => {
+      wb.addChild(child)
+    }
     bridge.io.apb
   }
 }

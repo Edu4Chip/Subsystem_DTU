@@ -8,6 +8,7 @@ import scala.collection.mutable
 import chiseltest._
 import chiseltest.formal._
 import misc.FormalHelper._
+import misc.BusTarget
 
 object ApbPort {
   def targetPort(addrWidth: Int, dataWidth: Int): ApbPort = {
@@ -34,12 +35,12 @@ class ApbPort(
   val prdata = Output(UInt(dataWidth.W))
   val pslverr = Output(Bool())
 
-  val children = mutable.ListBuffer[ApbTarget]()
-  var addChild: ApbTarget => Unit = child => {
+  val children = mutable.ListBuffer[BusTarget]()
+  var addChild: BusTarget => Unit = child => {
     children += child
   }
 
-  def getTargets(): Seq[ApbTarget] = {
+  def getTargets(): Seq[BusTarget] = {
     children.toSeq
   }
 
@@ -57,7 +58,7 @@ class ApbPort(
     // Target Properties
     assert(
       rose(apbTxActive).within(MAX_RESP_TIME) |=> pready,
-      cf"${name}: the target signals ready at least $MAX_RESP_TIME cycles after"
+      cf"${name}: the target signals ready at least $MAX_RESP_TIME cycles after the beginning of a transaction"
     )
     assert(
       (psel && pslverr) -> pready,
@@ -122,8 +123,8 @@ class ApbPort(
 
     // Target Assumptions
     assume(
-      rose(apbTxActive).within(MAX_RESP_TIME) |=> pready,
-      cf"${name}: the target signals ready at least ${MAX_RESP_TIME} cycles after"
+      rose(apbTxActive).within(2) |=> pready, // 4 cycles (setup + access + 2 wait)
+      cf"${name}: the target signals ready at least 4 cycles after the beginning of a transaction"
     )
     assume(
       (psel && pslverr) -> pready,
@@ -136,7 +137,7 @@ class ApbPort(
 
     // Liveness Check
     assert(
-      apbTxActive.within(MAX_RESP_TIME + 1) |=> !apbTxActive,
+      apbTxActive.within(MAX_RESP_TIME) |=> !apbTxActive,
       cf"${name}: an active transaction should be completed within ${MAX_RESP_TIME} cycles"
     )
 

@@ -12,6 +12,7 @@ import apb.ApbMux
 import misc.FormalHelper
 import apb.ApbArbiter
 import apb.ApbBfm
+import misc.BusTarget
 
 class ApbTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
 
@@ -26,13 +27,13 @@ class ApbTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
         10,
         32,
         Seq(
-          ApbTarget("t0", 0x000, 8),
-          ApbTarget("t1", 0x100, 8),
-          ApbTarget("t2", 0x200, 8),
+          BusTarget("t0", 0x000, 8),
+          BusTarget("t1", 0x100, 8),
+          BusTarget("t2", 0x200, 8),
           // 0x300-> 0x3ff is unmapped
         )
       ),
-      Seq(BoundedCheck(10))
+      Seq(BoundedCheck(12))
     )
   }
 
@@ -41,9 +42,9 @@ class ApbTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
         10,
         32,
         Seq(
-          ApbTarget("t0", 0x000, 8),
-          ApbTarget("t1", 0x100, 8),
-          ApbTarget("t2", 0x200, 8),
+          BusTarget("t0", 0x000, 8),
+          BusTarget("t1", 0x100, 8),
+          BusTarget("t2", 0x200, 8),
         )
       )).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
         val bfm = new ApbBfm(dut.clock, dut.io.master)
@@ -52,7 +53,7 @@ class ApbTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
   }
 
   "ApbArbiter" should "satisfy properties" in {
-    verify(new apb.ApbArbiter(16, 32), Seq(BoundedCheck(10)))
+    verify(new apb.ApbArbiter(16, 32), Seq(BoundedCheck(12)))
   }
 
 }

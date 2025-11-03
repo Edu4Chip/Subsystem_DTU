@@ -62,24 +62,10 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 }
 
-class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
+object AdderTest {
 
-  behavior of "DTU Subsystem"
-
-  it should "pass adder test" in {
-  
-    val config = DtuSubsystemConfig.default
-      .copy(
-        romProgramPath = "leros-asm/didactic.s",
-        lerosBaudRate = 100000000
-      )
-
-    test(MemoryFactory.using(RegMemory)(new DtuTestHarness(config))).withAnnotations(
-      Seq()
-    ) { dut =>
-      val bfm = new DtuTestHarnessBfm(dut)
-
-      def ready(): Boolean = {
+  def apply(bfm: DtuInterface, clk: Clock) = {
+    def ready(): Boolean = {
         bfm.readCrossCoreReg(0) == 1
       }
 
@@ -99,10 +85,10 @@ class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
       def add(a: Int, b: Int): Int = {
         loadValues(a, b)
         setValid(true)
-        dut.clock.stepUntil(ready())
-        dut.clock.stepUntil(!ready())
+        clk.stepUntil(ready())
+        clk.stepUntil(!ready())
         setValid(false)
-        dut.clock.stepUntil(ready())
+        clk.stepUntil(ready())
         getResult()
       }
 
@@ -112,14 +98,69 @@ class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
       bfm.uploadProgram("leros-asm/didactic_adder.s")
       bfm.resetLerosDisable()
 
-      add(1, 2) shouldEqual 3
+      assert(add(1, 2) == 3, "Adder test failed for 1 + 2")
 
-      add(10, 20) shouldEqual 30
+      assert(add(10, 20) == 30, "Adder test failed for 10 + 20")
 
-      add(100, 200) shouldEqual 300
+      assert(add(100, 200) == 300, "Adder test failed for 100 + 200")
 
-      add(0xffffffff, 0x0001) shouldEqual 0x0000 // Overflow case
+      assert(add(0xffffffff, 0x0001) == 0x0000, "Adder test failed for overflow case")
+  }
+
+}
+
+class AdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
+
+  behavior of "DTU Subsystem"
+
+  it should "pass adder test" in {
+  
+    val config = DtuSubsystemConfig.default
+      .copy(
+        romProgramPath = "leros-asm/didactic.s",
+        lerosBaudRate = 100000000
+      )
+
+    test(MemoryFactory.using(RegMemory)(new DtuTestHarness(config))).withAnnotations(
+      Seq()
+    ) { dut =>
+      val bfm = new DtuTestHarnessBfm(dut)
+
+      AdderTest(bfm, dut.clock)
     }
+  }
+
+}
+
+
+object SelfTest {
+
+  def apply(bfm: DtuInterface, clk: Clock, seed: Int, gpioPins: Int): Unit = {
+    def startSelfTest(seed: Int) = {
+      bfm.writeCrossCoreReg(0, seed)
+    }
+
+    def done: Boolean = {
+      bfm.readCrossCoreReg(0) == 1
+    }
+
+    def result: Int = {
+      bfm.readCrossCoreReg(1)
+    }
+
+    def selftest(seed: Int): Int = {
+      startSelfTest(seed)
+      clk.stepUntil(done)
+      result
+    }
+
+    bfm.resetLerosEnable()
+    bfm.selectBootRam()
+    bfm.enableUartLoopBack()
+    bfm.uploadProgram("leros-asm/selftest.s")
+    bfm.resetLerosDisable()
+
+    assert(selftest(seed) == (seed & ((1 << gpioPins) - 1)), s"Self-test failed with seed 0x${seed.toHexString} got 0x${result.toHexString} expected 0x${(seed & ((1 << gpioPins) - 1)).toHexString}")
   }
 
 }
@@ -140,31 +181,7 @@ class SelfTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
     ) { dut =>
       val bfm = new DtuTestHarnessBfm(dut)
 
-      def startSelfTest(seed: Int) = {
-        bfm.writeCrossCoreReg(0, seed)
-      }
-
-      def done: Boolean = {
-        bfm.readCrossCoreReg(0) == 1
-      }
-
-      def result: Int = {
-        bfm.readCrossCoreReg(1)
-      }
-
-      def selftest(seed: Int): Int = {
-        startSelfTest(seed)
-        dut.clock.stepUntil(done)
-        result
-      }
-
-      bfm.resetLerosEnable()
-      bfm.selectBootRam()
-      bfm.enableUartLoopBack()
-      bfm.uploadProgram("leros-asm/selftest.s")
-      bfm.resetLerosDisable()
-
-      selftest(0xdeadbeef) shouldEqual 0xef
+      SelfTest(bfm, dut.clock, 0xdeadbeef, math.min(config.gpioPins - 4, 8))
     }
   }
 

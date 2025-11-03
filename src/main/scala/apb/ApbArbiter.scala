@@ -3,13 +3,15 @@ package apb
 import chisel3._
 import chisel3.util._
 import misc.FormalHelper.formalProperties
+import misc.BusTarget
+import os.stat
 
 object ApbArbiter {
   def apply(masterLeft: ApbPort, masterRight: ApbPort): ApbPort = {
     val addrWidth = math.max(masterLeft.addrWidth, masterRight.addrWidth)
     val dataWidth = math.max(masterLeft.dataWidth, masterRight.dataWidth)
     val arb = Module(new ApbArbiter(addrWidth, dataWidth))
-    arb.io.merged.addChild = (child: ApbTarget) => {
+    arb.io.merged.addChild = (child: BusTarget) => {
       masterLeft.addChild(child)
       masterRight.addChild(child)
     }
@@ -30,7 +32,9 @@ class ApbArbiter(addrWidth: Int, dataWidth: Int) extends Module {
 
   formalProperties {
     io.merged.masterPortProperties("ApbArbiter.merged")
-    io.masters.foreach(_.targetPortProperties("ApbArbiter.masters"))
+    io.masters.zipWithIndex.foreach { case (port, idx) =>
+      port.targetPortProperties(s"ApbArbiter.masters[$idx]")
+    }
   }
 
   object State extends ChiselEnum {
@@ -38,6 +42,7 @@ class ApbArbiter(addrWidth: Int, dataWidth: Int) extends Module {
   }
 
   val stateReg = RegInit(State.Idle)
+  val lastTurn = RegInit(1.B)
 
   io.masters.foreach(_ <> io.merged)
   io.masters.foreach(_.pready := 0.B)
@@ -47,13 +52,17 @@ class ApbArbiter(addrWidth: Int, dataWidth: Int) extends Module {
 
   switch(stateReg) {
     is(State.Idle) {
-      when(io.masters(0).psel) {
+      when(io.masters(0).psel && io.masters(1).psel) {
+        stateReg := Mux(lastTurn === 0.B, State.SetupRight, State.SetupLeft)
+
+      }.elsewhen(io.masters(0).psel) {
         stateReg := State.SetupLeft
       }.elsewhen(io.masters(1).psel) {
         stateReg := State.SetupRight
       }
     }
     is(State.SetupLeft) {
+      lastTurn := 0.B
       io.merged <> io.masters(0)
       io.merged.penable := 0.B
       stateReg := State.ServeLeft
@@ -65,6 +74,7 @@ class ApbArbiter(addrWidth: Int, dataWidth: Int) extends Module {
       }
     }
     is(State.SetupRight) {
+      lastTurn := 1.B
       io.merged <> io.masters(1)
       io.merged.penable := 0.B
       stateReg := State.ServeRight

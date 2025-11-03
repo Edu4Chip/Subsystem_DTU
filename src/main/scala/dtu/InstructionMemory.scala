@@ -5,7 +5,6 @@ import chisel3.util.log2Ceil
 
 import leros.InstrMemIO
 import apb.ApbPort
-import apb.ApbTarget
 
 import mem.MemoryFactory
 

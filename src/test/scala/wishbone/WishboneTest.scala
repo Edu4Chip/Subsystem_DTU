@@ -12,6 +12,7 @@ import apb.ApbMux
 import misc.FormalHelper
 import apb.ApbArbiter
 import apb.ApbBfm
+import misc.BusTarget
 
 class WishboneTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
 
@@ -21,6 +22,21 @@ class WishboneTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
     verify(
       new WishboneToApb(8),
       Seq(BoundedCheck(15))
+    )
+  }
+
+  "WishboneMux" should "satisfy properties" in {
+    verify(
+      new WishboneMux(
+        10,
+        Seq(
+          BusTarget("t0", 0x000, 8),
+          BusTarget("t1", 0x100, 8),
+          BusTarget("t2", 0x200, 8),
+          // 0x300-> 0x3ff is unmapped
+        )
+      ),
+      Seq(BoundedCheck(12))
     )
   }
 
