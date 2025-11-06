@@ -6,6 +6,7 @@ import chisel3.util.log2Ceil
 import misc.Helper.WordToByte
 import misc.Helper.BytesToWord
 import scala.util.DynamicVariable
+import os.copy.over
 
 trait AbstractMemory {
   def read(addr: UInt): UInt
@@ -20,10 +21,18 @@ object MemoryFactory {
 
   private val factory: DynamicVariable[MemoryFactory] = new DynamicVariable(ChiselSyncMemory)
 
-  def create(n: Int): AbstractMemory = factory.value.create(n)
+  private val overFactory = new DynamicVariable[Option[MemoryFactory]](None)
+
+  def create(n: Int): AbstractMemory = overFactory.value.getOrElse(factory.value).create(n)
 
   def using[T](f: MemoryFactory)(block: => T): T = {
     factory.withValue(f) {
+      block
+    }
+  }
+
+  def usingOverride[T](f: MemoryFactory)(block: => T): T = {
+    overFactory.withValue(Some(f)) {
       block
     }
   }

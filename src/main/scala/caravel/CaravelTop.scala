@@ -2,25 +2,25 @@ package caravel
 
 import mem.MemoryFactory
 import dtu.DtuSubsystemConfig
+import io.GpioPins
+import circt.stage.ChiselStage
 
 import chisel3._
+import chisel3.util._
 import wishbone.WishboneMux
+import wishbone.HasWishbonePort
+import wishbone.WishbonePort
 
 object CaravelTop extends App {
 
-  circt.stage.ChiselStage.emitSystemVerilogFile((new CaravelTop(115200)).printMemoryMap(), Array("-td", "generated"), Array("--lowering-options=disallowLocalVariables,disallowPackedArrays"))
+  ChiselStage.emitSystemVerilogFile((new CaravelTop(115200)).printMemoryMap(), Array("-td", "generated/caravel"), Array("--lowering-options=disallowLocalVariables,disallowPackedArrays"))
   
 }
 
-class CaravelTop(baud: Int) extends Module with CaravelUserProject {
-  override def desiredName: String = "CaravelTop"
-
-  val io = IO(new CaravelUserProjectIO(DtuSubsystemConfig.default.copy(gpioPins = 24, apbAddrWidth = 32)))
-
-  // Caravel user project logic goes here
+class CaravelTop(baud: Int) extends Module with HasWishbonePort {
 
   val conf = DtuSubsystemConfig.default.copy(
-    gpioPins = 8,
+    gpioPins = 12,
     frequency = 10_000_000,
     lerosBaudRate = baud,
     ponteBaudRate = baud,
@@ -29,30 +29,50 @@ class CaravelTop(baud: Int) extends Module with CaravelUserProject {
     romProgramPath = "leros-asm/selftest.s",
   )
 
-  val lerosCfram = MemoryFactory.using(mem.ChiselSyncMemory) {
+  val io = IO(new Bundle {
+    /** wishbone port */
+    val wb = WishbonePort.targetPort(32)
+
+    /** logic analyzer debug outputs */
+    val la_out = Output(UInt(128.W))
+
+    /** IO pads */
+    val gpio = new GpioPins(24)
+    
+  })
+
+  override def getWbPort: WishbonePort = io.wb
+
+  // Caravel user project logic goes here
+
+  
+
+  val lerosCfram = MemoryFactory.using(mem.ChipFoundrySram) {
     Module(new LerosCaravel(conf, "ChipFoundrySram"))
   }
-  lerosCfram.io.gpio.in := io.gpio.in
+  lerosCfram.io.gpio.in := io.gpio.in(11, 0)
 
-  val lerosSky130 = MemoryFactory.using(mem.ChiselSyncMemory) {
-    Module(new LerosCaravel(conf, "ChipFoundrySram"))
+  val lerosSky130 = MemoryFactory.using(mem.Sky130Sram) {
+    Module(new LerosCaravel(conf, "OpenRamSky130"))
   }
-  lerosSky130.io.gpio.in := io.gpio.in
+  lerosSky130.io.gpio.in := io.gpio.in(23, 12)
 
-
-  val lerosDffram = MemoryFactory.using(mem.ChiselSyncMemory) {
-    Module(new LerosCaravel(conf, "ChipFoundrySram"))
-  }
-  lerosDffram.io.gpio.in := io.gpio.in
 
   WishboneMux(io.wb)(
     lerosCfram.io.wb -> 0x00000000,
     lerosSky130.io.wb -> 0x00001000,
-    lerosDffram.io.wb -> 0x00002000
   )
 
-  io.gpio.out := 0.U
-  io.gpio.oe := 0.U
-  io.la.out := 0.U
-  io.user_irq := 0.U
+  io.gpio.out := Cat(lerosSky130.io.gpio.out, lerosCfram.io.gpio.out)
+  io.gpio.oe := Cat(lerosSky130.io.gpio.oe, lerosCfram.io.gpio.oe)
+  val expandedPcCfram = Wire(UInt(32.W))
+  expandedPcCfram := lerosCfram.io.dbg.pc
+  val expandedPcSky130 = Wire(UInt(32.W))
+  expandedPcSky130 := lerosSky130.io.dbg.pc
+  io.la_out := Cat(lerosSky130.io.dbg.acc, expandedPcSky130, lerosCfram.io.dbg.acc, expandedPcCfram)
+
+  def printMemoryMap(): this.type = {
+    io.wb.printMemoryMap()
+    this
+  }
 }

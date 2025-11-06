@@ -13,6 +13,9 @@ generate:
 generate-caravel:
 	sbt "runMain caravel.LerosCaravel $(MEM) $(PROG) --target-dir $(BUILD_DIR)/caravel"
 
+generate-caravel-top:
+	sbt "runMain caravel.CaravelTop"
+
 clean:
 	rm -rf $(BUILD_DIR)
 	$(MAKE) -C openlane clean

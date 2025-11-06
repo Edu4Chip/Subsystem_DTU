@@ -10,10 +10,6 @@ DIE_AREA: [0, 0, 1200, 700]
 
 FP_PDN_MULTILAYER: true # old DESIGN_IS_CORE
 
-# for OpenRAM macros
-MAGIC_CAPTURE_ERRORS: false
-# ERROR_ON_KLAYOUT_DRC: false # did not help
-
 # Pin Order
 #FP_PIN_ORDER_CFG: dir::pin_order.cfg
 
@@ -34,35 +30,31 @@ MACROS: {
         "instances": {
             "dmem.m.mem": {
                 "location": [
-                    20,
+                    50,
                     200
                 ],
-                "orientation": "N"
+                "orientation": "FN"
             },
             "instrMem.m.mem": {
                 "location": [
-                    700,
+                    670,
                     200
                 ],
                 "orientation": "N"
             }
         },
-        "gds": [
-            "pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds"
-        ],
-        "lef": [
-            "pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_32x256_8.lef"
-        ],
-        "nl": [
-            "pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"
-        ],
-        "spef": {},
-        "lib": {},
-        "spice": [],
-        "sdf": {}
+        "gds": ["pdk_dir::libs.ref/sky130_sram_macros/gds/sky130_sram_1kbyte_1rw1r_32x256_8.gds"],
+        "lef": ["pdk_dir::libs.ref/sky130_sram_macros/lef/sky130_sram_1kbyte_1rw1r_32x256_8.lef"],
+        "nl": ["pdk_dir::libs.ref/sky130_sram_macros/verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v"],
+        "lib": {
+            "*": "pdk_dir::libs.ref/sky130_sram_macros/lib/sram_1rw1r_32_256_8_sky130_TT_1p8V_25C.lib"
+        }
     }
 }
 
-# RUN_KLAYOUT_DRC: false
-# MAGIC_DRC_USE_GDS: false
-# QUIT_ON_MAGIC_DRC: false
+RUN_KLAYOUT_DRC: false
+MAGIC_DRC_USE_GDS: false
+QUIT_ON_MAGIC_DRC: false
+MAGIC_EXT_USE_GDS: false
+MAGIC_CAPTURE_ERRORS: false
+QUIT_ON_ILLEGAL_OVERLAPS: false
