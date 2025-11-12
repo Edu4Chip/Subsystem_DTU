@@ -26,3 +26,8 @@ test:
 	cd leros; make init
 	cd leros; sbt test
 	cd hello-morse; sbt test
+
+.PHONY: tools
+tools:
+	cd ponte-cli; cargo build --release
+	cp ponte-cli/target/release/ponte-cli tools/

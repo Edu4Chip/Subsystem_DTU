@@ -52,6 +52,24 @@ object IbexCode extends App {
   }
 }
 
+object LerosAssemble extends App {
+  val file = args.head
+
+  val code = Assembler.assemble(file)
+  val outFile = file.replace(".s", ".bin")
+
+  val byteArray = code.flatMap { word =>
+    Array(
+      (word & 0xff).toByte,
+      ((word >> 8) & 0xff).toByte
+    )
+  }.toArray
+
+  val fos = new java.io.FileOutputStream(outFile)
+  fos.write(byteArray)
+  fos.close()
+}
+
 object ProgArray extends App {
   val name = "didactic_adder"
 
