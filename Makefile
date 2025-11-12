@@ -2,7 +2,9 @@
 
 PROG ?= leros-asm/didactic_rt.s
 BUILD_DIR ?= generated
-MEM ?= RtlSyncMemory
+MEM_TYPE ?= RtlSyncMemory
+IMEM ?= 1024
+DMEM ?= 1024
 
 init:
 	git submodule update --init --recursive
@@ -11,7 +13,7 @@ generate:
 	sbt "runMain dtu.DtuSubsystem DidacticSram $(PROG) --target-dir $(BUILD_DIR)"
 
 generate-caravel:
-	sbt "runMain caravel.LerosCaravel $(MEM) $(PROG) --target-dir $(BUILD_DIR)/caravel"
+	sbt "runMain caravel.LerosCaravel $(MEM_TYPE) $(PROG) $(IMEM) $(DMEM) --target-dir $(BUILD_DIR)/caravel"
 
 generate-caravel-top:
 	sbt "runMain caravel.CaravelTop"
@@ -26,6 +28,7 @@ test:
 	cd leros; make init
 	cd leros; sbt test
 	cd hello-morse; sbt test
+
 
 .PHONY: tools
 tools:

@@ -60,7 +60,7 @@ class DffRam(words: Int) extends Module with AbstractMemory {
 
 class DffRamBlackbox(words: Int) extends BlackBox {
   val addrWidth = log2Ceil(words)
-  override def desiredName: String = s"RAM${words}"
+  override def desiredName: String = s"DFFRAM${words}x32"
 
   val io = IO(new Bundle {
     val CLK = Input(Clock())

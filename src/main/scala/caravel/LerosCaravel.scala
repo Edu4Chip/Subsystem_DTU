@@ -31,8 +31,8 @@ object LerosCaravel extends App {
         DtuSubsystemConfig.default
           .copy(
             romProgramPath = args(1),
-            instructionMemorySize = 1 << 10,
-            dataMemorySize = 1 << 10,
+            instructionMemorySize = args(2).toInt,
+            dataMemorySize =  args(3).toInt,
             frequency = 10_000_000,
             lerosBaudRate = 115200,
             ponteBaudRate = 115200,
@@ -40,7 +40,7 @@ object LerosCaravel extends App {
           ),
         args.head
       ).printMemoryMap(),
-      args.drop(2),
+      args.drop(4),
       Array("--lowering-options=disallowLocalVariables,disallowPackedArrays")
     )
   }

@@ -69,7 +69,7 @@ class CaravelTop(baud: Int) extends Module with HasWishbonePort {
   expandedPcCfram := lerosCfram.io.dbg.pc
   val expandedPcSky130 = Wire(UInt(32.W))
   expandedPcSky130 := lerosSky130.io.dbg.pc
-  io.la_out := Cat(lerosSky130.io.dbg.acc, expandedPcSky130, lerosCfram.io.dbg.acc, expandedPcCfram)
+  io.la_out := 0.U
 
   def printMemoryMap(): this.type = {
     io.wb.printMemoryMap()
