@@ -55,12 +55,6 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
     /** wishbone port */
     val wb = WishbonePort.targetPort(conf.apbAddrWidth)
 
-
-    val dbg = new Bundle {
-      val pc = Output(UInt(conf.instructionMemoryAddrWidth.W))
-      val acc = Output(UInt(32.W))
-    }
-
     /** IO pads */
     val gpio = new GpioPins(conf.gpioPins)
   
@@ -109,9 +103,6 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
     gpio.dmemPort -> 0x8100, // GPIO at 0x8100
     uart.dmemPort -> 0x8110, // UART at 0x8110
   )
-
-  io.dbg.pc := BoringUtils.bore(leros.pcReg)
-  io.dbg.acc := BoringUtils.bore(leros.alu.accuReg)
 
   io.gpio.out := gpio.gpioPort.out ## Cat(
     0.B,
