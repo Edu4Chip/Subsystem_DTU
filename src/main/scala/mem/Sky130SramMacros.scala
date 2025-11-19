@@ -80,7 +80,7 @@ class Sky130SramPort(addrWidth: Int) extends Bundle {
 }
 
 abstract class Sky130SramBlackBox(name: String, addrWidth: Int)
-    extends BlackBox {
+    extends BlackBox(Map("VERBOSE" -> 0)) {
   val io: Sky130SramPort = IO(new Sky130SramPort(addrWidth))
   override val desiredName: String = name
 }
