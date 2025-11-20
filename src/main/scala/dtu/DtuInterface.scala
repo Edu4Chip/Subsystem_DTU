@@ -107,7 +107,7 @@ trait DtuInterface {
   def loadInstrMem(data: Seq[Int]) = {
     send(0x0000, data)
     read(0x0000, data.length).zip(data).foreach { case (r, w) =>
-      assert(r == w, s"Wrong data")
+      assert(r == w, s"Readback mismatch in instruction memory load: read 0x${r.toHexString}, expected 0x${w.toHexString}")
     }
   }
 

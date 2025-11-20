@@ -10,6 +10,7 @@ import chisel3.util._
 import wishbone.WishboneMux
 import wishbone.HasWishbonePort
 import wishbone.WishbonePort
+import misc.FormalHelper.formalProperties
 
 object CaravelTop extends App {
 
@@ -17,9 +18,14 @@ object CaravelTop extends App {
   
 }
 
+object CaravelTopConfig {
+  val gpioPerLeros = 6
+  val numberOfLeros = 4
+}
+
 class CaravelTop(baud: Int) extends Module with HasWishbonePort {
 
-  val gpioPerLeros = 8
+  import CaravelTopConfig._
 
   val conf = DtuSubsystemConfig.default.copy(
     gpioPins = gpioPerLeros,
@@ -36,45 +42,57 @@ class CaravelTop(baud: Int) extends Module with HasWishbonePort {
     val wb = WishbonePort.targetPort(20)
 
     /** IO pads */
-    val gpio = new GpioPins(4 * gpioPerLeros)
+    val gpio = new GpioPins(numberOfLeros * gpioPerLeros)
     
   })
 
+  formalProperties {
+    io.wb.targetPortProperties("CaravelTop.wb")
+  }
+
   override def getWbPort: WishbonePort = io.wb
-
-  // Caravel user project logic goes here
-
-  
 
   val lerosCfram = MemoryFactory.using(mem.ChipFoundrySram) {
     Module(new LerosCaravel(conf, "ChipFoundrySram"))
   }
-  lerosCfram.io.gpio.in := io.gpio.in(7, 0)
 
   val lerosSky130 = MemoryFactory.using(mem.Sky130Sram) {
     Module(new LerosCaravel(conf, "OpenRamSky130"))
   }
-  lerosSky130.io.gpio.in := io.gpio.in(15, 8)
 
   val lerosDffRam = MemoryFactory.using(mem.DffRam) {
     Module(new LerosCaravel(conf, "DffRam"))
   }
-  lerosDffRam.io.gpio.in := io.gpio.in(23, 16)
 
   val lerosRtlRam = MemoryFactory.using(mem.ChiselSyncMemory) {
-    Module(new LerosCaravel(conf, "RtlSyncMemory"))
+    Module(new LerosCaravel(conf.copy(
+      instructionMemorySize = 1 << 8,
+      dataMemorySize = 1 << 7,
+    ), "RtlSyncMemory"))
   }
-  lerosRtlRam.io.gpio.in := io.gpio.in(31, 24)
+
+  val lerosSystems = Seq(lerosCfram, lerosSky130, lerosDffRam, lerosRtlRam)
+  require(numberOfLeros == lerosSystems.length, s"numberOfLeros ($numberOfLeros) must match the number of Leros subsystems instantiated (${lerosSystems.length})")
+
+  // Connect GPIO inputs
+  lerosSystems.zipWithIndex.foreach { case (leros, i) =>
+    println(s"${leros.desiredName} has GPIO [${(i + 1) * gpioPerLeros - 1}:${i * gpioPerLeros}]")
+    leros.io.gpio.in := RegNext(io.gpio.in((i + 1) * gpioPerLeros - 1, i * gpioPerLeros)) // input synchronization
+  }
+
+  // Connect outputs
+  io.gpio.out := Cat(lerosSystems.map(_.io.gpio.out).reverse)
+  io.gpio.oe := Cat(lerosSystems.map(_.io.gpio.oe).reverse)
+
+  val registerFileTest = Module(new RegisterFileTest)
 
   WishboneMux(io.wb)(
     lerosCfram.io.wb -> 0x00000000,
     lerosSky130.io.wb -> 0x00001000,
     lerosDffRam.io.wb -> 0x00002000,
     lerosRtlRam.io.wb -> 0x00003000,
+    registerFileTest.io.wb -> 0x00004000,
   )
-
-  io.gpio.out := Cat(lerosRtlRam.io.gpio.out, lerosDffRam.io.gpio.out, lerosSky130.io.gpio.out, lerosCfram.io.gpio.out)
-  io.gpio.oe := Cat(lerosRtlRam.io.gpio.oe, lerosDffRam.io.gpio.oe, lerosSky130.io.gpio.oe, lerosCfram.io.gpio.oe)
   
   def printMemoryMap(): this.type = {
     io.wb.printMemoryMap()

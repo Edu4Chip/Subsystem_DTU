@@ -140,8 +140,8 @@ package wishbone {
 
       // Target Properties
       assume(
-        rose(wbTxActive).within(2) |=> ack,
-        cf"${name}: the target signals ack at least 2 cycles after the beginning of a transaction"
+        rose(wbTxActive).within(4) |=> ack,
+        cf"${name}: the target signals ack at least 4 cycles after the beginning of a transaction"
       )
 
       assume(

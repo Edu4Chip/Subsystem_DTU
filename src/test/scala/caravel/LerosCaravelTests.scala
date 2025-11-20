@@ -4,10 +4,12 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import chisel3._
 import chiseltest._
+import chiseltest.formal._
 import org.scalatest.matchers.should.Matchers
 import dtu.DtuSubsystemConfig
 import mem._
 import misc.TestingHelper.ClockExtension
+import apb.ApbTargetBfm.Write
 
 
 class LerosCaravelAdderTest extends AnyFlatSpec with ChiselScalatestTester with Matchers {
@@ -23,7 +25,7 @@ class LerosCaravelAdderTest extends AnyFlatSpec with ChiselScalatestTester with 
       )
 
     test(MemoryFactory.using(RegMemory)(new LerosCaravel(config, "RegMemory"))).withAnnotations(
-      Seq()
+      Seq(WriteVcdAnnotation)
     ) { dut =>
       val bfm = new LerosCaravelTestHarness(dut, dut.clock, 0)
 

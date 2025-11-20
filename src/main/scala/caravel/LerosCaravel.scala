@@ -20,6 +20,7 @@ import mem.MemoryFactory
 import dtu._
 import wishbone._
 import chisel3.util.experimental.BoringUtils
+import misc.FormalHelper.formalProperties
 
 object LerosCaravel extends App {
 
@@ -36,7 +37,7 @@ object LerosCaravel extends App {
             frequency = 10_000_000,
             lerosBaudRate = 115200,
             ponteBaudRate = 115200,
-            gpioPins = 8,
+            gpioPins = CaravelTopConfig.gpioPerLeros,
           ),
         args.head
       ).printMemoryMap(),
@@ -61,6 +62,10 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
   })
   override def getWbPort: WishbonePort = io.wb
 
+  formalProperties {
+    io.wb.targetPortProperties("LerosCaravel.wb")
+  }
+
   val lerosRx = io.gpio.in(3)
   val ponteRx = io.gpio.in(1)
 
@@ -69,7 +74,7 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
   ponte.io.uart.rx := ponteRx
 
   val leros = Module(new Leros(conf.lerosSize, conf.instructionMemoryAddrWidth))
-  leros.reset := RegNext(sysCtrl.ctrlPort.lerosReset, 1.B)
+  leros.reset := RegNext(sysCtrl.ctrlPort.lerosReset || reset.asBool)
 
   val instrMem = Module(new InstructionMemory(conf.instructionMemorySize))
   val rom = Module(
@@ -90,7 +95,7 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
   )
 
   // Apb interconnect visible to Ibex and Ponte (Uart bridge)
-  ApbMux(ApbArbiter(ponte.io.apb, WishboneToApb(io.wb)))( // 12 bit address space
+  ApbMux(ApbArbiter(ponte.io.apb, WishboneToApb(WishbonePipelineStage(io.wb))))(
     instrMem.apbPort -> 0x000, // instruction memory at 0x000
     regBlock.apbPort -> 0x800, // cross-core registers at 0x800
     sysCtrl.apbPort -> 0xc00, // system control registers at 0xC00

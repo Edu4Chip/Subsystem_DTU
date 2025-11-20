@@ -40,4 +40,11 @@ class WishboneTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
     )
   }
 
+  "WishbonePipelineStage" should "satisfy properties" in {
+    verify(
+      new WishbonePipelineStage(10),
+      Seq(BoundedCheck(12))
+    )
+  }
+
 }

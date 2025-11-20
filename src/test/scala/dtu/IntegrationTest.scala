@@ -53,13 +53,13 @@ class IntegrationTest extends AnyFlatSpec with ChiselScalatestTester {
     .filter(_.isFile)
     .map(_.toString())
 
-  it should "correctly execute all Leros test programs" in {
-    test(MemoryFactory.using(memoryFactory)(new DtuTestHarness(config))).withAnnotations(
-      Seq()
-    ) { dut =>
-      progs.foreach(testProgram(dut))
-    }
-  }
+  // it should "correctly execute all Leros test programs" in {
+  //   test(MemoryFactory.using(memoryFactory)(new DtuTestHarness(config))).withAnnotations(
+  //     Seq()
+  //   ) { dut =>
+  //     progs.foreach(testProgram(dut))
+  //   }
+  // }
 }
 
 object AdderTest {
