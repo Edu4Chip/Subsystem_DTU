@@ -26,7 +26,7 @@ class ChipFoundrySram(words: Int) extends Module with AbstractMemory {
   })
 
   val mem = Module(words match {
-    case 256 => new ChipFoundrySramBlackbox()
+    case 1024 => new ChipFoundrySramBlackbox()
     case _ => throw new Exception(s"Unsupported memory size $words for ChipFoundrySram")
   })
 
@@ -60,7 +60,7 @@ class ChipFoundrySramBlackbox extends BlackBox {
   val io = IO(new Bundle {
     val clk_i = Input(Clock())
     val rst_i = Input(Bool())
-    val addr_i = Input(UInt(8.W))
+    val addr_i = Input(UInt(10.W))
     val we_i = Input(Bool())
     val sel_i = Input(UInt(4.W))
     val wr_data_i = Input(UInt(32.W))

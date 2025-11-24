@@ -12,5 +12,9 @@ class CaravelTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
     verify(new RegisterFileTest, Seq(BoundedCheck(12)))
   }
 
+  "WishboneGpioTest" should "satisfy properties" in {
+    verify(new WishboneGpio(8), Seq(BoundedCheck(12)))
+  }
+
 
 }

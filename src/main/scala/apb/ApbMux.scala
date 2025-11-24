@@ -105,12 +105,12 @@ object ApbMux {
 
     // byte address ranges for each target
     val targets = targetTuples.map { case (port, base) =>
-      val t = BusTarget(port.toString(), base, port.addrWidth)
+      val t = BusTarget(port.toString(), master.addrWidth, base, port.addrWidth)
       master.addChild(t)
       t
     }
 
-    targets.foreach(_.checkInsideMasterAddrSpace(master.addrWidth))
+    targets.foreach(_.checkInsideMasterAddrSpace())
 
     // check for overlap of target address ranges
     MemoryMapHelper.findAddressOverlap(

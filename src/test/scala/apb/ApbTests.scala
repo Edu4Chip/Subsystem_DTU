@@ -27,9 +27,9 @@ class ApbTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
         10,
         32,
         Seq(
-          BusTarget("t0", 0x000, 8),
-          BusTarget("t1", 0x100, 8),
-          BusTarget("t2", 0x200, 8),
+          BusTarget("t0", 10, 0x000, 8),
+          BusTarget("t1", 10, 0x100, 8),
+          BusTarget("t2", 10, 0x200, 8),
           // 0x300-> 0x3ff is unmapped
         )
       ),
@@ -42,9 +42,9 @@ class ApbTests extends AnyFlatSpec with ChiselScalatestTester with Formal {
         10,
         32,
         Seq(
-          BusTarget("t0", 0x000, 8),
-          BusTarget("t1", 0x100, 8),
-          BusTarget("t2", 0x200, 8),
+          BusTarget("t0", 10, 0x000, 8),
+          BusTarget("t1", 10, 0x100, 8),
+          BusTarget("t2", 10, 0x200, 8),
         )
       )).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
         val bfm = new ApbBfm(dut.clock, dut.io.master)

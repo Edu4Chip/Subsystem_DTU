@@ -38,6 +38,7 @@ object LerosCaravel extends App {
             lerosBaudRate = 115200,
             ponteBaudRate = 115200,
             gpioPins = CaravelTopConfig.gpioPerLeros,
+            apbAddrWidth = 16
           ),
         args.head
       ).printMemoryMap(),
@@ -95,10 +96,10 @@ class LerosCaravel(conf: DtuSubsystemConfig, memoryType: String) extends Module 
   )
 
   // Apb interconnect visible to Ibex and Ponte (Uart bridge)
-  ApbMux(ApbArbiter(ponte.io.apb, WishboneToApb(WishbonePipelineStage(io.wb))))(
-    instrMem.apbPort -> 0x000, // instruction memory at 0x000
-    regBlock.apbPort -> 0x800, // cross-core registers at 0x800
-    sysCtrl.apbPort -> 0xc00, // system control registers at 0xC00
+  ApbMux(ApbArbiter(ponte.io.apb, WishboneToApb(io.wb)))(
+    instrMem.apbPort -> 0x0000, // instruction memory at 0x0000
+    regBlock.apbPort -> 0x1000, // cross-core registers at 0x1000
+    sysCtrl.apbPort -> 0x2000, // system control registers at 0x2000
   )
 
   // Interconnect visible to Leros

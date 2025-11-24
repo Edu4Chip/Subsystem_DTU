@@ -8,8 +8,9 @@ import os.stat
 
 object ApbArbiter {
   def apply(masterLeft: ApbPort, masterRight: ApbPort): ApbPort = {
-    val addrWidth = math.max(masterLeft.addrWidth, masterRight.addrWidth)
-    val dataWidth = math.max(masterLeft.dataWidth, masterRight.dataWidth)
+    val addrWidth = math.min(masterLeft.addrWidth, masterRight.addrWidth)
+    assert(masterLeft.dataWidth == masterRight.dataWidth, "APB masters must have the same data width")
+    val dataWidth = math.min(masterLeft.dataWidth, masterRight.dataWidth)
     val arb = Module(new ApbArbiter(addrWidth, dataWidth))
     arb.io.merged.addChild = (child: BusTarget) => {
       masterLeft.addChild(child)

@@ -1,7 +1,9 @@
 package misc
 
+import chisel3.util.log2Ceil
 
-case class BusTarget(portName: String, baseByteAddr: Int, byteAddrWidth: Int) {
+
+case class BusTarget(portName: String, masterAddrWidth: Int, baseByteAddr: Int, byteAddrWidth: Int) {
   require(
     MemoryMapHelper.isWordAligned(baseByteAddr),
     s"$this: Base address must be word aligned: 0x${baseByteAddr.toHexString}"
@@ -11,7 +13,7 @@ case class BusTarget(portName: String, baseByteAddr: Int, byteAddrWidth: Int) {
     s"$this: Base address must be aligned to address width (${byteAddrWidth}.W): 0x${baseByteAddr.toHexString}"
   )
 
-  def checkInsideMasterAddrSpace(masterAddrWidth: Int): Unit = {
+  def checkInsideMasterAddrSpace(): Unit = {
     require(
       MemoryMapHelper.addressRangeInsideAdressSpace(
         byteAddrRange,
@@ -28,8 +30,9 @@ case class BusTarget(portName: String, baseByteAddr: Int, byteAddrWidth: Int) {
   def fixedAddrPart = baseByteAddr >> byteAddrWidth
 
   override def toString(): String = {
-    "%40s: 0x%08x - 0x%08x".format(
-      portName,
+    val digits = masterAddrWidth / 4 + (if (masterAddrWidth % 4 != 0) 1 else 0)
+    s"%15s: 0x%0${digits}x - 0x%0${digits}x".format(
+      portName.split(":").head,
       byteAddrRange.start,
       byteAddrRange.end
     )
