@@ -9,11 +9,8 @@ import misc.FormalHelper._
 
 class RegisterFileTest extends Module {
 
-  /// size in bytes
-  val size = 256
-
   val io = IO(new Bundle {
-    val wb = WishbonePort.targetPort(log2Ceil(size))
+    val wb = WishbonePort.targetPort(12)
   })
 
   formalProperties {
