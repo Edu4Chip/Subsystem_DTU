@@ -59,7 +59,7 @@ class RegisterFileTest extends Module {
    );
  */
 class RegFileBlackbox() extends BlackBox {
-  override def desiredName: String = "rf_top"
+  override def desiredName: String = "rf_wrapper"
   val io = IO(new Bundle {
     val clk = Input(Clock())
     val w_data = Input(UInt(32.W))
