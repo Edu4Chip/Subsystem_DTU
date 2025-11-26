@@ -22,6 +22,7 @@ object CaravelTopConfig {
   val gpioPerLeros = 6
   val numberOfLeros = 4
   val numberOfWbGpio = 6
+  val helloMorseGpio = 1
 }
 
 class CaravelTop(baud: Int) extends Module with HasWishbonePort {
@@ -39,14 +40,14 @@ class CaravelTop(baud: Int) extends Module with HasWishbonePort {
     apbAddrWidth = 16
   )
 
-  require((numberOfLeros * gpioPerLeros) + numberOfWbGpio <= 37, s"Total number of GPIO pins exceeds available pins in Caravel (max 37)")
+  require((numberOfLeros * gpioPerLeros) + numberOfWbGpio + helloMorseGpio <= 37, s"Total number of GPIO pins exceeds available pins in Caravel (max 37)")
 
   val io = IO(new Bundle {
     /** wishbone port */
     val wb = WishbonePort.targetPort(20)
 
     /** IO pads */
-    val gpio = new GpioPins((numberOfLeros * gpioPerLeros) + numberOfWbGpio)
+    val gpio = new GpioPins((numberOfLeros * gpioPerLeros) + numberOfWbGpio + helloMorseGpio)
     
   })
 
@@ -83,12 +84,20 @@ class CaravelTop(baud: Int) extends Module with HasWishbonePort {
 
   val wishboneGpio = Module(new WishboneGpio(numberOfWbGpio))
 
-  val gpios = lerosSystems.map(l => (l.desiredName, gpioPerLeros, l.io.gpio)) :+ ("wishboneGpio", numberOfWbGpio, wishboneGpio.io.gpio)
+  val morse = Module(new HelloMorse(conf.frequency))
+  val morseGpio = Wire(new GpioPins(1))
+  morseGpio.out := morse.io.led
+  morseGpio.oe := 0.B
 
-  // Connect GPIO inputs
-  gpios.zipWithIndex.foreach { case ((name, gpioCount, gpio), i) =>
-    println(s"$name has GPIO [${(i + 1) * gpioCount - 1}:${i * gpioCount}]")
-    gpio.in := RegNext(io.gpio.in((i + 1) * gpioCount - 1, i * gpioCount)) // input synchronization
+
+
+  val gpios = lerosSystems.map(l => (l.desiredName, gpioPerLeros, l.io.gpio)) :+ ("wishboneGpio", numberOfWbGpio, wishboneGpio.io.gpio) :+ ("helloMorse", helloMorseGpio, morseGpio)
+
+
+  gpios.foldLeft(0) { case (offset, (name, gpioCount, gpio)) =>
+    println(s"$name connected to GPIO [${offset + gpioCount - 1}:$offset]")
+    gpio.in := RegNext(io.gpio.in((offset + gpioCount) - 1, offset)) // input synchronization
+    offset + gpioCount
   }
 
   // Connect outputs
@@ -96,7 +105,6 @@ class CaravelTop(baud: Int) extends Module with HasWishbonePort {
   io.gpio.oe := Cat(gpios.map(_._3.oe).reverse)
 
   val registerFileTest = Module(new RegisterFileTest)
-
   
 
   WishboneMux(io.wb)(
