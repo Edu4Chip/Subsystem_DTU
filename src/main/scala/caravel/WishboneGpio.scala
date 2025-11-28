@@ -8,7 +8,7 @@ import misc.FormalHelper.formalProperties
 class WishboneGpio(n: Int) extends Module {
 
   val io = IO(new Bundle {
-    val wb = wishbone.WishbonePort.targetPort(2)
+    val wb = wishbone.WishbonePort.targetPort(4)
     val gpio = new GpioPins(n)
   })
 
@@ -35,8 +35,8 @@ class WishboneGpio(n: Int) extends Module {
   io.wb.dat_o := MuxLookup(RegNext(io.wb.adr), outputEnables)(
     Seq(
       0.U -> outputEnables,
-      1.U -> outputs,
-      2.U -> inputs
+      4.U -> outputs,
+      8.U -> inputs
     )
   )
 
@@ -45,7 +45,7 @@ class WishboneGpio(n: Int) extends Module {
       is(0.U) {
         outputEnables := io.wb.dat_i
       }
-      is(1.U) {
+      is(4.U) {
         outputs := io.wb.dat_i
       }
     }
